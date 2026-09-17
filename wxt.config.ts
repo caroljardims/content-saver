@@ -38,6 +38,18 @@ export default defineConfig({
 
     permissions: ['identity', 'activeTab', 'scripting', 'storage', 'alarms', 'contextMenus'],
 
+    // WXT fills `icons` from public/icon/*.png on its own. Chrome falls back
+    // to those for the toolbar, but the store review reads default_icon, so
+    // state it rather than relying on the fallback.
+    action: {
+      default_icon: {
+        16: 'icon/16.png',
+        32: 'icon/32.png',
+        48: 'icon/48.png',
+        128: 'icon/128.png',
+      },
+    },
+
     host_permissions: ['https://www.googleapis.com/*', 'https://oauth2.googleapis.com/*'],
 
     commands: {
