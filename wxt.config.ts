@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   srcDir: 'src',
 
+  // Not the default ".output": a leading dot makes the folder hidden in
+  // macOS file pickers, and "Load unpacked" needs you to navigate into it.
+  outDir: 'dist',
+
   // MV3 on Firefox too (event page rather than service worker, handled by WXT).
   // The MV2 default would leave us without browser.action and browser.scripting,
   // which the background relies on.
