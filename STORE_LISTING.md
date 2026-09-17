@@ -96,6 +96,12 @@ later reading, and optionally syncs it to the user's own Google Drive.
 Certify all three: not sold to third parties, not used for unrelated purposes,
 not used to determine creditworthiness.
 
+## OAuth status
+
+`drive.appdata` is classified **non-sensitive** by Google, confirmed in Cloud
+Console under Data Access. Publishing therefore requires no OAuth verification
+and the consent screen can be set to In production directly.
+
 ## Assets still needed
 
 - [ ] At least one screenshot, 1280×800 or 640×400

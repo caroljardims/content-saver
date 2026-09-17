@@ -94,7 +94,10 @@ Needed only for Drive sync. Skip it entirely if you just want local saves.
 
 4. **Add the scope.** On the Scopes step, manually add `https://www.googleapis.com/auth/drive.appdata`.
 
-   > **Check the warning Google shows here.** If `drive.appdata` is flagged as a sensitive scope, public listing requires OAuth verification (app review, privacy policy, homepage). `https://www.googleapis.com/auth/drive.file` with a visible folder is non-sensitive and skips review entirely — worth reconsidering before you commit to the hidden folder.
+   > **Confirmed non-sensitive.** Cloud Console lists `drive.appdata` under
+   > "Your non-sensitive scopes", so publishing needs **no OAuth verification**:
+   > no app review, no demo video, no domain verification. The consent screen
+   > can move straight to production with unlimited users.
 
 5. **Pin the extension ID.** The OAuth client is bound to one extension ID, and an unpacked extension's ID changes with its folder path. Click *Pack extension* at `chrome://extensions` once to get a `.pem`, derive the base64 public key from it, and set `WXT_EXTENSION_KEY` in `.env`.
 
@@ -112,7 +115,7 @@ These are properties of the platforms, not bugs to fix:
 
 - **`chrome.identity.getAuthToken` is Chrome-only.** Firefox and Edge use `launchWebAuthFlow` with the **implicit grant**, because a Google "Web application" client requires a client secret at token exchange and no extension can ship a secret. That means access tokens only: ~1 hour, no refresh token, silent re-auth when they lapse.
 - **Drive API v3 has no ETags** (v2 did), so there is no `If-Match` conditional write. The field-aware merge is what covers concurrent edits instead; worst case, a simultaneous title edit on two devices keeps one of them.
-- **Testing-mode refresh tokens expire after 7 days.** Does not affect the Chrome path. Moving the consent screen to *In production* removes it.
+- **Testing-mode refresh tokens expire after 7 days.** Does not affect the Chrome path. Moving the consent screen to *In production* removes it — and since `drive.appdata` is non-sensitive, that move needs no review.
 - **`appDataFolder` data is invisible to the user.** They cannot inspect, back up, or migrate it, and "Disconnect app" in Drive settings deletes it without warning.
 - **The account email needs a permission we do not request.** The popup shows "Google account" rather than an address; showing the real one means adding `identity.email`.
 - **Safari is not free.** $99/year Apple Developer account plus an Xcode wrapper. Chrome Web Store is a one-time $5; Firefox AMO and Edge Add-ons are free.
