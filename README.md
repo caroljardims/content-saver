@@ -128,6 +128,45 @@ These are properties of the platforms, not bugs to fix:
 4. Full-page list UI with search and tag filtering; the popup is deliberately minimal.
 5. Optional passphrase encryption (WebCrypto AES-GCM over `content` and `notes`) behind a toggle.
 
+## Releasing an update
+
+The extension ID, OAuth client, redirect URIs and store listing all persist
+across updates. A new version is only ever: bump, build, upload, submit.
+
+1. **Bump the version** in `package.json`. WXT copies it into the manifest.
+   It must be strictly higher than the published one — Chrome rejects equal or
+   lower. Dot-separated integers, 1–4 parts, each 0–65535, no leading zeros.
+
+   ```bash
+   npm version patch --no-git-tag-version   # 1.0.0 -> 1.0.1
+   ```
+
+2. **Verify and package.** Typechecks, runs the tests, then zips both browsers.
+
+   ```bash
+   npm run release
+   ```
+
+3. **Upload** `dist/content-saver-<version>-chrome.zip` to the existing item in
+   the [dashboard](https://chrome.google.com/webstore/devconsole) under
+   *Package → Upload new package*, then submit for review. Updates are usually
+   reviewed faster than a first submission.
+
+4. Installed copies update themselves within a few hours; Chrome polls for new
+   versions on its own.
+
+### Things that make an update non-routine
+
+- **Adding a permission** can disable the extension for existing users until
+  they accept the new one. Adding a *host* permission is the usual culprit.
+- **Adding an OAuth scope** re-triggers the consent screen, and a sensitive or
+  restricted scope would pull the project into verification — currently avoided
+  because `drive.appdata` is non-sensitive.
+- **No rollbacks.** There is no "unpublish this version" — fixing a bad release
+  means publishing a higher version over it.
+- **Firefox is separate.** `dist/content-saver-<version>-firefox.zip` goes to
+  addons.mozilla.org on its own schedule.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
