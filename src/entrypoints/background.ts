@@ -12,6 +12,11 @@ const CONTENT_SCRIPT = 'content-scripts/content.js';
 export default defineBackground(() => {
   exposeDebugHandle();
 
+  // Created on every worker start, not just on install: alarms.create is
+  // idempotent by name, and doing it here means an existing install picks up
+  // a changed interval instead of keeping the one from its install day.
+  void browser.alarms.create(SYNC_ALARM, { periodInMinutes: 1 });
+
   browser.runtime.onInstalled.addListener(async () => {
     browser.contextMenus.create({
       id: 'save-selection',
@@ -29,14 +34,16 @@ export default defineBackground(() => {
       contexts: ['page'],
     });
 
-    // Alarms, not setTimeout: the MV3 service worker is killed after ~30s
-    // idle and takes any pending timer with it.
-    await browser.alarms.create(SYNC_ALARM, { periodInMinutes: 5 });
   });
 
-  browser.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === SYNC_ALARM || alarm.name === 'sync-retry') {
-      void sync().catch(() => {});
+  // Async listener: the returned promise keeps the worker alive for the
+  // duration, which a floating `void sync()` would not.
+  browser.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name !== SYNC_ALARM && alarm.name !== 'sync-retry') return;
+    try {
+      await sync();
+    } catch (error) {
+      console.warn('[content-saver] scheduled sync failed:', error);
     }
   });
 
@@ -199,7 +206,7 @@ async function handle(message: Message): Promise<Response> {
         updatedAt: new Date().toISOString(),
       };
       await db.put(updated, 1);
-      void sync().catch(() => {});
+      await sync().catch(() => undefined);
       return { ok: true, capture: updated };
     }
 
@@ -216,7 +223,7 @@ async function handle(message: Message): Promise<Response> {
         },
         1,
       );
-      void sync().catch(() => {});
+      await sync().catch(() => undefined);
       return { ok: true };
     }
 

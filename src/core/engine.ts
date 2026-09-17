@@ -220,12 +220,29 @@ export async function status(): Promise<SyncStatus> {
   };
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return Promise.race([
+    promise,
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ]);
+}
+
 /**
- * Save a capture. Writes locally and returns - the upload is best-effort and
- * happens after, so a save never depends on the network or on being signed in.
+ * Save a capture, then upload it.
+ *
+ * The upload is awaited rather than fired and forgotten. A floating promise
+ * does not keep an MV3 service worker alive: the worker can be torn down the
+ * moment the event handler returns, killing the upload halfway. Awaiting
+ * inside the handler is what keeps the worker running until it finishes.
+ *
+ * The local write has already happened by this point, so a slow or failing
+ * network delays the confirmation but can never lose the capture.
  */
 export async function save(capture: Capture): Promise<Capture> {
   await db.put(capture, 1);
-  void sync().catch(() => {});
+  await withTimeout(
+    sync().catch(() => undefined),
+    15_000,
+  );
   return capture;
 }
