@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Save links, selections and article text to your own cloud storage.",
+  "license": "MIT",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",

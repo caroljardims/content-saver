@@ -127,3 +127,10 @@ These are properties of the platforms, not bugs to fix:
 3. Export/import JSON as an escape hatch, independent of any backend.
 4. Full-page list UI with search and tag filtering; the popup is deliberately minimal.
 5. Optional passphrase encryption (WebCrypto AES-GCM over `content` and `notes`) behind a toggle.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+The bundled Readability.js from Mozilla is MPL-2.0; its license header is
+kept intact in the build.
