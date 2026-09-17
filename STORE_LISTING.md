@@ -70,7 +70,8 @@ them against the code.
 | `identity` | Performs the Google OAuth flow so the user can connect their own Google Drive for syncing. Optional; the extension is fully functional without it. |
 | `alarms` | Schedules the periodic background sync with the user's Drive. Service workers cannot use timers for this. |
 | `contextMenus` | Adds the right-click options for saving a page, a selection, or a link. |
-| `https://www.googleapis.com/*` | Communicates with the Google Drive API to sync the user's captures to their own account. |
+| `https://www.googleapis.com/*` | Calls the Google Drive API to sync the user's saved items to their own Drive account, and oauth2.googleapis.com to revoke the token on disconnect. No other hosts are contacted. |
+| Remote code | **None.** All JavaScript is bundled in the package. No remotely hosted code is loaded, injected or executed; no `eval`, no `new Function`. Verified against the build: every script tag is package-local and the only network endpoints are googleapis.com, oauth2.googleapis.com and accounts.google.com. |
 
 ## Single purpose statement
 
