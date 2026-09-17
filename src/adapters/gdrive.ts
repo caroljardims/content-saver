@@ -111,12 +111,28 @@ async function toRemoteRecord(file: DriveFile): Promise<RemoteRecord | null> {
   if (file.name === INDEX_FILE) return null;
   try {
     const raw = await readFile(file.id);
-    if (!isValidCapture(raw)) return null;
+    if (!isValidCapture(raw)) {
+      // Silently skipping a malformed file keeps sync robust, but silently
+      // skipping ALL of them looks identical to "the download is broken".
+      console.warn('[content-saver] skipped unparseable remote file', file.name, raw);
+      return null;
+    }
     return { capture: normalizeCapture(raw), remoteId: file.id };
-  } catch {
-    // A half-written or hand-edited file should not stall the whole sync.
+  } catch (error) {
+    console.warn('[content-saver] could not read remote file', file.name, error);
     return null;
   }
+}
+
+/** Raw listing of the app folder, for debugging from the worker console. */
+export async function listRemoteFiles(): Promise<DriveFile[]> {
+  const params = new URLSearchParams({
+    spaces: SPACE,
+    fields: 'files(id, name, size, modifiedTime)',
+    pageSize: '200',
+  });
+  const { files } = await driveJson<{ files?: DriveFile[] }>(`${FILES}?${params}`);
+  return files ?? [];
 }
 
 export const driveAdapter: SyncAdapter = {

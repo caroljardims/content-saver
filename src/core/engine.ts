@@ -46,8 +46,19 @@ async function runSync({ interactive = false }): Promise<SyncReport> {
       await adapter.connect({ interactive: true });
     }
 
-    await pull(adapter, report);
+    // Push even when the pull fails. These are independent directions, and
+    // gating uploads on a working download meant one bad pull kept every
+    // local capture stranded in the outbox indefinitely.
+    let pullError: unknown;
+    try {
+      await pull(adapter, report);
+    } catch (error) {
+      pullError = error;
+      console.warn('[content-saver] pull failed, still pushing:', error);
+    }
+
     await push(adapter, report);
+    if (pullError) throw pullError;
 
     report.purged = await db.purgeTombstones();
     await maybeCompact(adapter);
@@ -57,6 +68,7 @@ async function runSync({ interactive = false }): Promise<SyncReport> {
     await db.setMeta('backoffIndex', 0);
   } catch (error) {
     report.error = error instanceof Error ? error.message : String(error);
+    console.error('[content-saver] sync failed:', error);
     await db.setMeta('lastError', report.error);
     await scheduleBackoff();
   }

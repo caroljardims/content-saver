@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
 import { activeAdapter, adapterById, setActiveAdapter } from '../adapters/registry';
+import { listRemoteFiles } from '../adapters/gdrive';
 import * as db from '../core/db';
 import { save, status, sync } from '../core/engine';
 import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core/model';
@@ -9,6 +10,8 @@ const SYNC_ALARM = 'sync';
 const CONTENT_SCRIPT = 'content-scripts/content.js';
 
 export default defineBackground(() => {
+  exposeDebugHandle();
+
   browser.runtime.onInstalled.addListener(async () => {
     browser.contextMenus.create({
       id: 'save-selection',
@@ -71,6 +74,26 @@ export default defineBackground(() => {
     }));
   });
 });
+
+/**
+ * Debug handle, reachable from the service worker console as `cs`.
+ * appDataFolder is invisible in the Drive UI, so without this there is no way
+ * to tell "upload never happened" from "download is broken".
+ */
+function exposeDebugHandle(): void {
+  Object.assign(globalThis, {
+    cs: {
+      /** What Drive actually holds right now. */
+      remote: async () => console.table(await listRemoteFiles()),
+      /** What this device holds, including sync flags. */
+      local: async () => console.table(await db.all()),
+      /** Items waiting to upload. */
+      queue: async () => console.table(await db.pending()),
+      status,
+      sync: () => sync({ interactive: true }),
+    },
+  });
+}
 
 // --- Capture ----------------------------------------------------------
 

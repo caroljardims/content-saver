@@ -66,10 +66,29 @@ interface CachedToken {
   expiresAt: number;
 }
 
-let webToken: CachedToken | null = null;
+const TOKEN_KEY = 'googleWebToken';
+
+/**
+ * Persisted, not held in a module variable.
+ *
+ * The MV3 service worker is torn down after ~30s idle, which would discard an
+ * in-memory token. Every later background sync then found itself "not
+ * connected" and silently skipped uploading, while clicking Connect appeared
+ * to work every time.
+ */
+async function readToken(): Promise<CachedToken | null> {
+  const stored = await browser.storage.local.get(TOKEN_KEY);
+  return (stored[TOKEN_KEY] as CachedToken | undefined) ?? null;
+}
+
+async function writeToken(value: CachedToken | null): Promise<void> {
+  if (value) await browser.storage.local.set({ [TOKEN_KEY]: value });
+  else await browser.storage.local.remove(TOKEN_KEY);
+}
 
 async function webAuthToken(interactive: boolean): Promise<string> {
-  if (webToken && webToken.expiresAt > Date.now() + 60_000) return webToken.token;
+  const cached = await readToken();
+  if (cached && cached.expiresAt > Date.now() + 60_000) return cached.token;
 
   const clientId = webClientId();
   if (!clientId) throw new Error('WXT_GOOGLE_WEB_CLIENT_ID is not set');
@@ -99,7 +118,7 @@ async function webAuthToken(interactive: boolean): Promise<string> {
   if (!token) throw new Error(fragment.get('error') ?? 'No access token in redirect');
 
   const expiresIn = Number(fragment.get('expires_in') ?? 3600);
-  webToken = { token, expiresAt: Date.now() + expiresIn * 1000 };
+  await writeToken({ token, expiresAt: Date.now() + expiresIn * 1000 });
   return token;
 }
 
@@ -128,11 +147,10 @@ export async function getToken({ interactive = false } = {}): Promise<string> {
 }
 
 export async function invalidateToken(token: string): Promise<void> {
-  if (hasNativeAuth()) {
-    await chromeInvalidate(token);
-    return;
-  }
-  if (webToken?.token === token) webToken = null;
+  if (hasNativeAuth() && nativeClientId()) await chromeInvalidate(token);
+
+  const cached = await readToken();
+  if (cached?.token === token) await writeToken(null);
 }
 
 export async function signOut(): Promise<void> {
@@ -143,7 +161,7 @@ export async function signOut(): Promise<void> {
   } catch {
     // Already signed out, or never signed in. Nothing to undo.
   }
-  webToken = null;
+  await writeToken(null);
 }
 
 /** The signed-in account's email, for display in the popup. */
