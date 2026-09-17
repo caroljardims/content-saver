@@ -13,10 +13,16 @@ A browser extension that saves links, text selections and article content to sto
 | Chrome MV3 build | ✅ |
 | Firefox MV3 build | ✅ |
 | Merge/conflict logic | ✅ 12 tests passing |
-| Google Drive adapter | ⚠️ written, **not yet run against the live API** |
+| Google Drive adapter | ✅ verified against the live API |
+| Cross-device restore | ✅ verified — second browser, captures restored |
 | OneDrive / Dropbox / GitHub / WebDAV | ⬜ stubs in `src/adapters/registry.ts` |
 
-The Drive adapter compiles and is wired end to end, but nothing here has talked to Google yet — that needs the Cloud Console setup below and a manual pass.
+Upload and download both work against real Drive, and a fresh install in a
+second browser pulls the full history back down. What has *not* been
+exercised: concurrent edits on two devices at once (the merge logic is
+covered by tests, but never by two live clients), tombstone propagation
+across devices, and anything past the first 200 captures (the pull paginates,
+but has only ever seen one page).
 
 ## Quick start
 
@@ -113,7 +119,7 @@ These are properties of the platforms, not bugs to fix:
 
 ## Next steps
 
-1. Run the Drive adapter against the live API and fix what the real responses disagree with.
+1. Verify concurrent edits: same capture edited on two devices before either syncs.
 2. Add the OneDrive adapter — MSAL PKCE is genuinely cleaner than Google's extension flow.
 3. Export/import JSON as an escape hatch, independent of any backend.
 4. Full-page list UI with search and tag filtering; the popup is deliberately minimal.
