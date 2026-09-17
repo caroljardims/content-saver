@@ -1,8 +1,74 @@
 @import 'tailwindcss';
 
+/**
+ * Warm beige base with pastel accents.
+ *
+ * Defined as CSS variables first and mapped into Tailwind's theme with
+ * `@theme inline`, so the dark palette is a variable swap rather than a
+ * `dark:` variant on every element. One set of class names, both themes.
+ */
+:root {
+  --c-canvas: #faf4ec; /* page */
+  --c-surface: #fffcf7; /* cards, raised areas */
+  --c-soft: #f2e8da; /* recessed panels, hover */
+  --c-line: #e7dbc9; /* hairlines */
+  --c-ink: #3d342c; /* primary text */
+  --c-muted: #8a7a68; /* secondary text */
+
+  --c-clay: #a85b3e; /* primary action */
+  --c-clay-strong: #8f4a30;
+  --c-on-clay: #fff8f0;
+
+  --c-sage: #5f7a52; /* success, synced */
+  --c-rose: #a8503f; /* errors */
+  --c-lilac: #7a6a95; /* accents */
+}
+
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #0f172a;
-    color: #e2e8f0;
+  :root {
+    --c-canvas: #201b17;
+    --c-surface: #292320;
+    --c-soft: #332b25;
+    --c-line: #3f352d;
+    --c-ink: #f1e7da;
+    --c-muted: #a89684;
+
+    --c-clay: #d4886a;
+    --c-clay-strong: #e09a7d;
+    --c-on-clay: #241d18;
+
+    --c-sage: #a3bf93;
+    --c-rose: #e09287;
+    --c-lilac: #b4a6cd;
   }
+}
+
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-soft: var(--c-soft);
+  --color-line: var(--c-line);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-clay: var(--c-clay);
+  --color-clay-strong: var(--c-clay-strong);
+  --color-on-clay: var(--c-on-clay);
+  --color-sage: var(--c-sage);
+  --color-rose: var(--c-rose);
+  --color-lilac: var(--c-lilac);
+}
+
+body {
+  background-color: var(--c-canvas);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+  font-family:
+    ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+    sans-serif;
+}
+
+/* Warm, low-contrast scrollbars so they recede into the beige. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-line) transparent;
 }

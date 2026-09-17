@@ -19,6 +19,36 @@ const els = {
 /** Which rows are open. Popup-lifetime only - it closes often enough. */
 const expanded = new Set<string>();
 
+/**
+ * A row action that reports its own outcome in place, then reverts. Saves
+ * every button re-implementing the same disabled/label/restore dance.
+ */
+function action(label: string, run: () => Promise<string>): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.className = 'rounded-full px-2 py-0.5 text-muted transition-colors hover:bg-soft hover:text-ink disabled:opacity-50';
+  button.textContent = label;
+
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    const original = button.textContent;
+    button.textContent = '...';
+    try {
+      button.textContent = await run();
+    } catch (error) {
+      button.textContent = error instanceof Error ? error.message.slice(0, 40) : 'Failed';
+      button.classList.add('text-rose');
+    } finally {
+      button.disabled = false;
+      setTimeout(() => {
+        button.textContent = original;
+        button.classList.remove('text-rose');
+      }, 2000);
+    }
+  });
+
+  return button;
+}
+
 /** Bodies already fetched, so collapsing and reopening costs nothing. */
 const bodies = new Map<string, string>();
 
@@ -65,29 +95,47 @@ function buildPanel(capture: CaptureSummary): HTMLDivElement {
   // max-h + overflow so a long article scrolls inside the row instead of
   // stretching the popup to the height of the whole page.
   body.className =
-    'max-h-64 overflow-y-auto whitespace-pre-wrap break-words rounded bg-slate-50 p-2 text-xs leading-relaxed text-slate-700 select-text dark:bg-slate-800 dark:text-slate-300';
+    'max-h-64 overflow-y-auto rounded-xl bg-soft p-3 text-xs leading-relaxed break-words whitespace-pre-wrap text-ink/90 select-text';
   body.textContent = 'Loading...';
 
   const actions = document.createElement('div');
-  actions.className = 'mt-2 flex items-center gap-3 text-xs';
+  actions.className = 'mt-2 flex flex-wrap items-center gap-1 text-xs';
 
   const open = document.createElement('a');
   open.href = capture.url;
   open.target = '_blank';
   open.rel = 'noreferrer';
-  open.className = 'text-slate-500 underline hover:text-slate-900 dark:hover:text-slate-200';
+  open.className = 'rounded-full px-2 py-0.5 text-clay underline decoration-clay/40 underline-offset-2 transition-colors hover:bg-soft';
   open.textContent = 'Open original';
 
-  const copy = document.createElement('button');
-  copy.className = 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200';
-  copy.textContent = 'Copy text';
-  copy.addEventListener('click', async () => {
+  const copy = action('Copy text', async () => {
     await navigator.clipboard.writeText(bodies.get(capture.id) ?? '');
-    copy.textContent = 'Copied';
-    setTimeout(() => (copy.textContent = 'Copy text'), 1200);
+    return 'Copied';
   });
 
-  actions.append(open, copy);
+  const share = action('Share', async () => {
+    const payload = {
+      title: capture.title || capture.url,
+      text: capture.excerpt || undefined,
+      url: capture.url,
+    };
+
+    // The share sheet needs a user gesture and is not available everywhere;
+    // falling back to the clipboard keeps the button meaningful regardless.
+    if (navigator.share) {
+      try {
+        await navigator.share(payload);
+        return 'Shared';
+      } catch (error) {
+        if ((error as Error)?.name === 'AbortError') return 'Share';
+      }
+    }
+    await navigator.clipboard.writeText(capture.url);
+    return 'Link copied';
+  });
+
+  actions.append(open, copy, share);
+
   panel.append(body, actions);
 
   void bodyFor(capture).then((text) => {
@@ -107,15 +155,15 @@ function buildRow(capture: CaptureSummary): HTMLLIElement {
   item.className = 'group';
 
   const header = document.createElement('div');
-  header.className = 'flex items-start gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800';
+  header.className = 'flex items-start gap-2.5 px-4 py-2.5 transition-colors hover:bg-soft';
 
   const toggle = document.createElement('button');
   toggle.className = 'flex min-w-0 flex-1 items-start gap-2 text-left';
   toggle.setAttribute('aria-expanded', String(expanded.has(capture.id)));
 
   const caret = document.createElement('span');
-  caret.className = 'mt-0.5 shrink-0 text-xs text-slate-400 transition-transform';
-  caret.textContent = '>';
+  caret.className = 'mt-0.5 shrink-0 text-[10px] text-clay transition-transform duration-150';
+  caret.textContent = '\u25b8';
 
   const text = document.createElement('span');
   text.className = 'min-w-0 flex-1';
@@ -125,7 +173,7 @@ function buildRow(capture: CaptureSummary): HTMLLIElement {
   title.textContent = capture.title || capture.url;
 
   const meta = document.createElement('p');
-  meta.className = 'truncate text-xs text-slate-400';
+  meta.className = 'truncate text-xs text-muted';
   const bits = [capture.siteName || hostOf(capture.url), relative(capture.createdAt)];
   if (capture.contentLength > 0) bits.push(words(capture.contentLength));
   meta.textContent = bits.join(' · ');
@@ -135,7 +183,7 @@ function buildRow(capture: CaptureSummary): HTMLLIElement {
 
   const remove = document.createElement('button');
   remove.className =
-    'invisible shrink-0 rounded px-1 text-xs text-slate-400 hover:text-red-600 group-hover:visible';
+    'invisible shrink-0 rounded-full px-1.5 text-xs text-muted transition-colors group-hover:visible hover:text-rose';
   remove.textContent = 'x';
   remove.title = 'Delete';
   remove.addEventListener('click', async () => {
@@ -177,7 +225,7 @@ function render(captures: CaptureSummary[]): void {
 
   if (captures.length === 0) {
     const empty = document.createElement('li');
-    empty.className = 'px-4 py-6 text-center text-xs text-slate-400';
+    empty.className = 'px-4 py-8 text-center text-xs text-muted';
     empty.textContent = 'Nothing saved yet.';
     els.list.append(empty);
     return;
@@ -201,8 +249,8 @@ function renderStatus(status: SyncStatus): void {
 
   els.status.textContent = parts.join(' · ');
   els.status.className = broken
-    ? 'px-4 pb-2 text-xs text-red-600'
-    : 'px-4 pb-2 text-xs text-slate-500';
+    ? 'px-4 pt-2.5 pb-1 text-xs text-rose'
+    : 'px-4 pt-2.5 pb-1 text-xs text-muted';
 
   // Keyed off the live connection, not the stored adapter id. Keying it off
   // the id meant a failed connection hid the only button that could retry it.
@@ -217,8 +265,8 @@ async function refresh(): Promise<void> {
     send<{ ok: true; status: SyncStatus } | { ok: false; error: string }>({ type: 'status' }),
   ]);
 
-  if (listRes.ok) render(listRes.captures);
   if (statusRes.ok) renderStatus(statusRes.status);
+  if (listRes.ok) render(listRes.captures);
 }
 
 /** Disable the button for the duration so a double-click cannot double-save. */

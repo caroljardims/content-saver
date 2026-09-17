@@ -6,56 +6,59 @@
     <title>Content Saver</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
-  <body class="w-[380px] bg-white text-slate-900">
-    <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-      <h1 class="text-sm font-semibold">Content Saver</h1>
+  <body class="w-[380px]">
+    <header class="flex items-center justify-between px-4 pt-4 pb-3">
+      <h1 class="flex items-center gap-2 text-sm font-semibold tracking-tight">
+        <span class="inline-block h-2.5 w-2.5 rounded-full bg-clay"></span>
+        Content Saver
+      </h1>
       <button
         id="sync"
-        class="rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+        class="rounded-full px-2.5 py-1 text-xs text-muted transition-colors hover:bg-soft hover:text-ink"
         title="Sync now"
       >
         Sync
       </button>
     </header>
 
-    <div class="flex gap-2 px-4 py-3">
+    <div class="flex gap-2 px-4">
       <button
         id="save-page"
-        class="flex-1 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        class="flex-1 rounded-xl bg-clay px-3 py-2.5 text-sm font-medium text-on-clay shadow-sm transition-colors hover:bg-clay-strong"
       >
         Save page
       </button>
       <button
         id="save-selection"
-        class="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50"
+        class="flex-1 rounded-xl border border-line bg-surface px-3 py-2.5 text-sm font-medium transition-colors hover:bg-soft"
       >
         Save selection
       </button>
     </div>
 
-    <p id="status" class="px-4 pb-2 text-xs text-slate-500"></p>
+    <p id="status" class="px-4 pt-2.5 pb-1 text-xs text-muted"></p>
 
-    <div id="connect-row" class="hidden border-t border-slate-200 px-4 py-3">
-      <p class="mb-2 text-xs text-slate-600">
-        Saving to this device only. Connect an account to sync.
+    <div id="connect-row" class="mx-4 mt-2 rounded-xl border border-line bg-surface p-3">
+      <p class="mb-2 text-xs leading-relaxed text-muted">
+        Saving to this device only. Connect an account to sync across browsers.
       </p>
       <button
         id="connect"
-        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50"
+        class="w-full rounded-lg border border-line bg-canvas px-3 py-2 text-sm font-medium transition-colors hover:bg-soft"
       >
         Connect Google Drive
       </button>
     </div>
 
-    <div class="border-t border-slate-200 px-4 py-2">
-      <button id="disconnect" class="hidden text-xs text-slate-500 hover:text-red-600">
+    <div class="px-4 pt-1">
+      <button id="disconnect" class="hidden text-xs text-muted transition-colors hover:text-rose">
         Disconnect account
       </button>
     </div>
 
     <ul
       id="list"
-      class="max-h-[28rem] divide-y divide-slate-100 overflow-y-auto border-t border-slate-200 dark:divide-slate-800 dark:border-slate-700"
+      class="mt-3 max-h-[28rem] overflow-y-auto border-t border-line pb-1"
     ></ul>
 
     <script type="module" src="./main.ts"></script>

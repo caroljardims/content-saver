@@ -1,7 +1,17 @@
 import { browser } from 'wxt/browser';
 import { randomState } from './pkce';
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.appdata'];
+/** Hidden per-app folder. Enough to sync, cannot create anything visible. */
+export const SCOPE_APPDATA = 'https://www.googleapis.com/auth/drive.appdata';
+
+/**
+ * Files this app creates, visible in the user's Drive. Requested separately
+ * and only when the user asks to export something, so the common case never
+ * has to consent to it. Non-sensitive, unlike the broader Drive scopes.
+ */
+export const SCOPE_DRIVE_FILE = 'https://www.googleapis.com/auth/drive.file';
+
+const SCOPES = [SCOPE_APPDATA];
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKENINFO = 'https://www.googleapis.com/oauth2/v3/tokeninfo';
 
@@ -33,9 +43,9 @@ function assertConfigured(): void {
 
 // --- Chrome path ------------------------------------------------------
 
-function chromeToken(interactive: boolean): Promise<string> {
+function chromeToken(interactive: boolean, scopes: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
+    chrome.identity.getAuthToken({ interactive, scopes }, (token) => {
       const error = chrome.runtime.lastError;
       if (error || !token) {
         reject(new Error(error?.message ?? 'No token returned'));
@@ -66,7 +76,12 @@ interface CachedToken {
   expiresAt: number;
 }
 
-const TOKEN_KEY = 'googleWebToken';
+/**
+ * Keyed by scope set, not global. A drive.appdata token cannot write a visible
+ * file and a drive.file token cannot see the hidden folder, so caching them
+ * under one key would hand the wrong token to whichever call came second.
+ */
+const tokenKey = (scopes: string[]) => `googleWebToken:${[...scopes].sort().join(' ')}`;
 
 /**
  * Persisted, not held in a module variable.
@@ -76,18 +91,20 @@ const TOKEN_KEY = 'googleWebToken';
  * connected" and silently skipped uploading, while clicking Connect appeared
  * to work every time.
  */
-async function readToken(): Promise<CachedToken | null> {
-  const stored = await browser.storage.local.get(TOKEN_KEY);
-  return (stored[TOKEN_KEY] as CachedToken | undefined) ?? null;
+async function readToken(scopes: string[]): Promise<CachedToken | null> {
+  const key = tokenKey(scopes);
+  const stored = await browser.storage.local.get(key);
+  return (stored[key] as CachedToken | undefined) ?? null;
 }
 
-async function writeToken(value: CachedToken | null): Promise<void> {
-  if (value) await browser.storage.local.set({ [TOKEN_KEY]: value });
-  else await browser.storage.local.remove(TOKEN_KEY);
+async function writeToken(scopes: string[], value: CachedToken | null): Promise<void> {
+  const key = tokenKey(scopes);
+  if (value) await browser.storage.local.set({ [key]: value });
+  else await browser.storage.local.remove(key);
 }
 
-async function webAuthToken(interactive: boolean): Promise<string> {
-  const cached = await readToken();
+async function webAuthToken(interactive: boolean, scopes: string[]): Promise<string> {
+  const cached = await readToken(scopes);
   if (cached && cached.expiresAt > Date.now() + 60_000) return cached.token;
 
   const clientId = webClientId();
@@ -100,7 +117,7 @@ async function webAuthToken(interactive: boolean): Promise<string> {
     client_id: clientId,
     response_type: 'token',
     redirect_uri: redirectUri,
-    scope: SCOPES.join(' '),
+    scope: scopes.join(' '),
     state,
     prompt: interactive ? 'consent' : 'none',
   });
@@ -118,7 +135,7 @@ async function webAuthToken(interactive: boolean): Promise<string> {
   if (!token) throw new Error(fragment.get('error') ?? 'No access token in redirect');
 
   const expiresIn = Number(fragment.get('expires_in') ?? 3600);
-  await writeToken({ token, expiresAt: Date.now() + expiresIn * 1000 });
+  await writeToken(scopes, { token, expiresAt: Date.now() + expiresIn * 1000 });
   return token;
 }
 
@@ -128,7 +145,10 @@ async function webAuthToken(interactive: boolean): Promise<string> {
  * One entry point for both browsers. Everything above this line is the only
  * place that knows Chrome and Firefox authenticate differently.
  */
-export async function getToken({ interactive = false } = {}): Promise<string> {
+export async function getToken({
+  interactive = false,
+  scopes = SCOPES,
+}: { interactive?: boolean; scopes?: string[] } = {}): Promise<string> {
   assertConfigured();
 
   // getAuthToken exists in every Chromium build, but only actually works in
@@ -137,20 +157,20 @@ export async function getToken({ interactive = false } = {}): Promise<string> {
   // than as fatal.
   if (hasNativeAuth() && nativeClientId()) {
     try {
-      return await chromeToken(interactive);
+      return await chromeToken(interactive, scopes);
     } catch (error) {
       if (!webClientId()) throw error;
     }
   }
 
-  return webAuthToken(interactive);
+  return webAuthToken(interactive, scopes);
 }
 
-export async function invalidateToken(token: string): Promise<void> {
+export async function invalidateToken(token: string, scopes: string[] = SCOPES): Promise<void> {
   if (hasNativeAuth() && nativeClientId()) await chromeInvalidate(token);
 
-  const cached = await readToken();
-  if (cached?.token === token) await writeToken(null);
+  const cached = await readToken(scopes);
+  if (cached?.token === token) await writeToken(scopes, null);
 }
 
 export async function signOut(): Promise<void> {
@@ -161,7 +181,9 @@ export async function signOut(): Promise<void> {
   } catch {
     // Already signed out, or never signed in. Nothing to undo.
   }
-  await writeToken(null);
+  // Drop every scope's token, not just the sync one.
+  await writeToken(SCOPES, null);
+  await writeToken([SCOPE_DRIVE_FILE], null);
 }
 
 /** The signed-in account's email, for display in the popup. */
