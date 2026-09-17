@@ -13,12 +13,22 @@ export interface Extraction {
   selection: string;
 }
 
+/**
+ * A capture without its body text.
+ *
+ * The list view only needs headers, and shipping every article's full text
+ * through sendMessage on each popup open costs megabytes for nothing. The
+ * body is fetched per item, on expand, via 'capture:get'.
+ */
+export type CaptureSummary = Omit<Capture, 'content'> & { contentLength: number };
+
 export type Message =
   | { type: 'capture:page' }
   | { type: 'capture:selection'; text?: string }
   | { type: 'capture:link'; url: string; title?: string }
   | { type: 'capture:delete'; id: string }
   | { type: 'capture:update'; id: string; patch: Partial<Capture> }
+  | { type: 'capture:get'; id: string }
   | { type: 'list' }
   | { type: 'sync'; interactive?: boolean }
   | { type: 'status' }
@@ -28,7 +38,7 @@ export type Message =
 
 export type Response =
   | { ok: true; capture: Capture }
-  | { ok: true; captures: Capture[] }
+  | { ok: true; captures: CaptureSummary[] }
   | { ok: true; status: SyncStatus }
   | { ok: true; report: SyncReport }
   | { ok: true }

@@ -2,8 +2,8 @@ import { browser } from 'wxt/browser';
 import { activeAdapter, setActiveAdapter } from '../adapters/registry';
 import * as db from '../core/db';
 import { save, status, sync } from '../core/engine';
-import { newCapture, toCapture, type Capture } from '../core/model';
-import type { Extraction, Message, Response } from '../lib/messages';
+import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core/model';
+import type { CaptureSummary, Extraction, Message, Response } from '../lib/messages';
 
 const SYNC_ALARM = 'sync';
 const CONTENT_SCRIPT = 'content-scripts/content.js';
@@ -136,6 +136,12 @@ async function flash(tabId: number, text: string): Promise<void> {
 
 // --- Message handling -------------------------------------------------
 
+/** Drop the body text, keeping the length so the UI knows whether to offer it. */
+function summarize(record: CaptureRecord): CaptureSummary {
+  const { content, ...rest } = toCapture(record);
+  return { ...rest, contentLength: content.length };
+}
+
 async function activeTabId(): Promise<number | undefined> {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   return tab?.id;
@@ -191,8 +197,14 @@ async function handle(message: Message): Promise<Response> {
       return { ok: true };
     }
 
+    case 'capture:get': {
+      const existing = await db.get(message.id);
+      if (!existing) return { ok: false, error: 'Not found' };
+      return { ok: true, capture: toCapture(existing) };
+    }
+
     case 'list':
-      return { ok: true, captures: (await db.list({ limit: 100 })).map(toCapture) };
+      return { ok: true, captures: (await db.list({ limit: 100 })).map(summarize) };
 
     case 'sync':
       return { ok: true, report: await sync({ interactive: message.interactive }) };
