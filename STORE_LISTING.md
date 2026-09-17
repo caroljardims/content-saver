@@ -105,8 +105,9 @@ and the consent screen can be set to In production directly.
 ## Assets still needed
 
 - [ ] At least one screenshot, 1280×800 or 640×400
-- [ ] Privacy policy and terms at public URLs (`docs/privacy.html`,
-      `docs/terms.html`)
-- [ ] ~~Privacy policy at a public URL~~ — upload `docs/privacy.html` to your own
-      domain, then paste the direct URL into the dashboard
+- [x] Privacy policy and terms at public URLs — published at
+      <https://caroljardims.com.br/content-saver/privacy> and
+      <https://caroljardims.com.br/content-saver/terms>. The landing page lives at
+      <https://caroljardims.com.br/content-saver>. Paste the privacy URL into the
+      dashboard.
 - [ ] Promotional tile 440×280 (optional)

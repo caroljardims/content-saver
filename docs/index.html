@@ -1,144 +1,435 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Content Saver — save what you want to come back to</title>
-    <meta
-      name="description"
-      content="A browser extension that saves links, selections and article text to storage you own. Local-first, no account, syncs through your own Google Drive."
-    />
-    <style>
-      :root {
-        --canvas: #faf4ec;
-        --surface: #fffcf7;
-        --soft: #f2e8da;
-        --line: #e7dbc9;
-        --ink: #3d342c;
-        --muted: #8a7a68;
-        --clay: #a85b3e;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas: #201b17;
-          --surface: #292320;
-          --soft: #332b25;
-          --line: #3f352d;
-          --ink: #f1e7da;
-          --muted: #a89684;
-          --clay: #d4886a;
-        }
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        padding: 3rem 1.25rem 5rem;
-        background: var(--canvas);
-        color: var(--ink);
-        font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont,
-          "Segoe UI", system-ui, sans-serif;
-        line-height: 1.65;
-        -webkit-font-smoothing: antialiased;
-      }
-      main { max-width: 42rem; margin: 0 auto; }
-      .mark {
-        display: inline-flex; align-items: center; gap: 0.5rem;
-        color: var(--clay); font-weight: 600; letter-spacing: -0.01em;
-      }
-      h1 { font-size: 1.9rem; line-height: 1.2; margin: 0.75rem 0 0.25rem; letter-spacing: -0.02em; }
-      h2 { font-size: 1.1rem; margin: 2.25rem 0 0.5rem; letter-spacing: -0.01em; }
-      .updated { color: var(--muted); font-size: 0.85rem; margin: 0 0 2rem; }
-      .lede {
-        background: var(--surface); border: 1px solid var(--line);
-        border-radius: 0.9rem; padding: 1rem 1.15rem; margin: 1.5rem 0 0;
-      }
-      ul { padding-left: 1.15rem; }
-      li { margin: 0.35rem 0; }
-      a { color: var(--clay); text-underline-offset: 2px; }
-      code {
-        background: var(--soft); padding: 0.1rem 0.35rem;
-        border-radius: 0.35rem; font-size: 0.85em; overflow-wrap: anywhere;
-      }
-      footer {
-        margin-top: 3rem; padding-top: 1.25rem;
-        border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem;
-      }
-      .tagline { font-size: 1.1rem; color: var(--muted); margin: 0 0 2rem; }
-      .features { display: grid; gap: 0.75rem; padding: 0; list-style: none; margin: 1.5rem 0; }
-      .features li {
-        background: var(--surface); border: 1px solid var(--line);
-        border-radius: 0.9rem; padding: 0.85rem 1rem; margin: 0;
-      }
-      .features strong { display: block; margin-bottom: 0.15rem; }
-      .features span { color: var(--muted); font-size: 0.92rem; }
-      .links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 2rem 0 0; }
-      .links a {
-        display: inline-flex; align-items: center; gap: 0.4rem;
-        border: 1px solid var(--line); border-radius: 0.75rem;
-        padding: 0.55rem 0.9rem; text-decoration: none; color: var(--ink);
-        background: var(--surface); font-size: 0.92rem;
-      }
-      .links a.primary { background: var(--clay); color: #fff8f0; border-color: var(--clay); }
-    </style>
-  </head>
-  <body>
-    <main>
-      <span class="mark">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-        </svg>
-        Content Saver
-      </span>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content Saver — guarde o que você quer reler</title>
+<meta name="description" content="Extensão de navegador que salva artigos, trechos e links num lugar que é seu. Local-first, sem conta, sincroniza pelo seu próprio Google Drive.">
 
-      <h1>Save what you want to come back to.</h1>
-      <p class="tagline">
-        A browser extension that keeps articles, selections and links in storage you own —
-        not on somebody else’s server.
-      </p>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:opsz,wght@9..144,300..900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-      <div class="lede">
-        <strong>There is no server behind this.</strong> No account to create, no database
-        holding your reading, no analytics. Everything saves to your own browser first, so it
-        is instant and works offline. Connect your Google Drive and it syncs across browsers
-        through your own account.
+<style>
+/* =========================================================
+   Design tokens — harvest (herdado do @caroljardims)
+   ========================================================= */
+:root {
+  --bg:        #F6EBD8;
+  --bg-2:      #EFDFC4;
+  --ink:       #3A2418;
+  --ink-soft:  #6B4632;
+  --muted:     #9A7A62;
+  --line:      #D9BC97;
+
+  --terracotta:#C65D3A;
+  --sienna:    #A8482A;
+  --mustard:   #D99A3D;
+  --olive:     #7E7A3E;
+  --peach:     #F0B48A;
+  --blush:     #E89B78;
+  --cream:     #FBEFDB;
+
+  --accent:    var(--terracotta);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-hand:    'Caveat', cursive;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-palette="harvest"]) {
+    --bg:        #2A1D18;
+    --bg-2:      #3A2921;
+    --ink:       #F3E3CC;
+    --ink-soft:  #D9BC97;
+    --muted:     #A88871;
+    --line:      #5B3E32;
+    --terracotta:#E38160;
+    --sienna:    #C86A47;
+    --mustard:   #E8B35F;
+    --olive:     #B0A860;
+    --peach:     #F4B895;
+    --blush:     #F0A07D;
+    --cream:     #3A2921;
+  }
+}
+:root[data-palette="dusk"] {
+  --bg:        #2A1D18;
+  --bg-2:      #3A2921;
+  --ink:       #F3E3CC;
+  --ink-soft:  #D9BC97;
+  --muted:     #A88871;
+  --line:      #5B3E32;
+  --terracotta:#E38160;
+  --sienna:    #C86A47;
+  --mustard:   #E8B35F;
+  --olive:     #B0A860;
+  --peach:     #F4B895;
+  --blush:     #F0A07D;
+  --cream:     #3A2921;
+}
+
+/* =========================================================
+   Base
+   ========================================================= */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: var(--blush); color: var(--ink); }
+
+a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: all .2s; }
+a:hover { color: var(--accent); }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0;
+  font-variation-settings: "opsz" 120, "SOFT" 100;
+}
+
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+
+/* Background blobs */
+.blob { position: absolute; z-index: 0; pointer-events: none; opacity: .55; filter: blur(0.5px); }
+.blob svg { display: block; width: 100%; height: 100%; }
+
+/* =========================================================
+   Topbar
+   ========================================================= */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 22px 0 0;
+}
+.brand-home {
+  font-family: var(--font-display); font-size: 19px;
+  text-decoration: none; color: var(--ink);
+}
+.brand-home:hover { color: var(--accent); }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.back {
+  font-family: var(--font-hand); font-size: 21px; color: var(--muted);
+  text-decoration: none;
+}
+.back:hover { color: var(--accent); }
+#lang-toggle {
+  background: var(--cream); border: 1px solid var(--line); border-radius: 999px;
+  font-size: 15px; line-height: 1; padding: 7px 11px; cursor: pointer;
+}
+
+/* =========================================================
+   Hero
+   ========================================================= */
+.hero { padding: 54px 0 30px; position: relative; }
+.section-label {
+  font-family: var(--font-hand); color: var(--accent); font-size: 28px;
+  margin-bottom: 6px; display: inline-block; transform: rotate(-1.5deg);
+}
+h1 {
+  font-size: clamp(40px, 6vw, 72px); font-weight: 400;
+  max-width: 15ch; letter-spacing: -0.02em; margin-bottom: 18px;
+}
+h1 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.kicker { color: var(--ink-soft); max-width: 52ch; font-size: 18px; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.badge {
+  background: var(--cream); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 14px; font-size: 14px; color: var(--ink-soft);
+}
+.badge strong { color: var(--accent); font-weight: 600; }
+
+/* Hero layout with the little card stack */
+.hero-grid {
+  display: grid; grid-template-columns: 1.25fr 0.75fr;
+  gap: 40px; align-items: center;
+}
+
+/* =========================================================
+   Card stack doodle
+   ========================================================= */
+.stack { position: relative; height: 290px; }
+.save-card {
+  position: absolute; left: 0; right: 0;
+  background: var(--cream); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 14px 30px -20px rgba(58,36,24,.7);
+}
+.save-card .site { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.save-card .ttl { font-family: var(--font-display); font-size: 17px; margin: 4px 0 8px; }
+.save-card .lines span {
+  display: block; height: 7px; border-radius: 4px;
+  background: var(--bg-2); margin-bottom: 6px;
+}
+.save-card .lines span:nth-child(2) { width: 86%; }
+.save-card .lines span:nth-child(3) { width: 62%; }
+.c1 { top: 0;     transform: rotate(-4deg); }
+.c2 { top: 82px;  transform: rotate(2.5deg); }
+.c3 { top: 164px; transform: rotate(-1deg); }
+.tape {
+  position: absolute; top: -12px; left: 50%; width: 76px; height: 22px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: var(--peach); opacity: .75; border-radius: 3px;
+}
+
+/* =========================================================
+   Lede
+   ========================================================= */
+.lede {
+  background: var(--cream); border: 1px solid var(--line);
+  border-radius: 18px; padding: 24px 26px; margin: 56px 0 0;
+  max-width: 62ch;
+}
+.lede strong { color: var(--accent); }
+
+/* =========================================================
+   Features
+   ========================================================= */
+section { padding: 70px 0 0; }
+.section-title {
+  font-size: clamp(30px, 4vw, 46px); font-weight: 400;
+  letter-spacing: -0.02em; margin-bottom: 30px; max-width: 20ch;
+}
+.section-title em { font-style: italic; color: var(--accent); font-weight: 300; }
+
+.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.feature {
+  background: var(--cream); border: 1px solid var(--line);
+  border-radius: 18px; padding: 20px 22px;
+  transition: transform .2s, box-shadow .2s;
+}
+.feature:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -24px rgba(58,36,24,.8); }
+.feature .num {
+  font-family: var(--font-hand); font-size: 24px; color: var(--accent);
+  display: block; line-height: 1; margin-bottom: 6px;
+}
+.feature h3 { font-size: 20px; margin-bottom: 6px; }
+.feature p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+
+/* =========================================================
+   Privacy note
+   ========================================================= */
+.note { max-width: 58ch; color: var(--ink-soft); }
+.note .hand { font-family: var(--font-hand); font-size: 22px; color: var(--accent); }
+
+.links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.links a {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 11px 20px; text-decoration: none; color: var(--ink);
+  background: var(--cream); font-size: 15px; transition: transform .2s;
+}
+.links a:hover { transform: translateY(-2px); color: var(--ink); }
+.links a.primary {
+  background: var(--ink); color: var(--bg); border-color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 10px 26px -14px rgba(58,36,24,.7);
+}
+
+/* =========================================================
+   Coffee / apoio
+   ========================================================= */
+.coffee { text-align: center; padding: 100px 0 40px; }
+.coffee h2 { font-size: clamp(32px, 4.5vw, 54px); font-weight: 400; margin-bottom: 16px; }
+.coffee h2 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.coffee p { color: var(--ink-soft); max-width: 44ch; margin: 0 auto 28px; }
+.coffee .hand { font-family: var(--font-hand); font-size: 22px; color: var(--accent); }
+.coffee-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.caveat { margin-top: 20px; color: var(--muted); font-size: 14px; }
+
+/* =========================================================
+   Footer
+   ========================================================= */
+footer {
+  margin-top: 70px; padding: 28px 0 60px;
+  border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 14px; text-align: center;
+}
+footer .sign { font-family: var(--font-hand); font-size: 20px; color: var(--accent); margin-bottom: 6px; }
+
+@media (max-width: 720px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .stack { max-width: 340px; }
+  .features { grid-template-columns: 1fr; }
+  h1 { max-width: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Background blobs -->
+<div class="blob" style="width:420px; height:420px; top:-140px; right:-130px; color:var(--peach);">
+  <svg viewBox="0 0 200 200"><path fill="currentColor" d="M43,-58C55,-49,63,-35,68,-19C72,-4,72,14,65,29C57,44,43,56,26,63C9,70,-10,72,-27,66C-44,60,-58,46,-66,29C-73,12,-73,-8,-66,-25C-59,-42,-45,-55,-29,-63C-13,-71,4,-73,20,-70C36,-67,31,-67,43,-58Z" transform="translate(100 100)"/></svg>
+</div>
+<div class="blob" style="width:340px; height:340px; bottom:120px; left:-150px; color:var(--mustard); opacity:.35;">
+  <svg viewBox="0 0 200 200"><path fill="currentColor" d="M39,-52C50,-43,57,-30,62,-15C66,0,68,17,61,30C54,43,38,52,21,59C4,66,-14,71,-30,66C-46,60,-59,44,-65,27C-70,10,-68,-9,-60,-24C-52,-39,-38,-50,-24,-58C-9,-65,7,-68,21,-65C34,-62,28,-61,39,-52Z" transform="translate(100 100)"/></svg>
+</div>
+
+<div class="wrap">
+
+  <!-- ==================================================
+       Topbar
+       ================================================== -->
+  <div class="topbar">
+    <a class="brand-home" href="https://caroljardims.com.br/">@caroljardims</a>
+    <div class="topbar-right">
+      <a class="back" href="https://caroljardims.com.br/" data-en="← back home" data-pt="← voltar pra casa">← voltar pra casa</a>
+      <button id="lang-toggle" aria-label="language">🇺🇸</button>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       Hero
+       ================================================== -->
+  <div class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="section-label" data-en="a tiny tool —" data-pt="uma ferramentinha —">uma ferramentinha —</span>
+        <h1 data-en="save what you want to <em>come back to.</em>" data-pt="guarde o que você quer <em>reler depois.</em>">guarde o que você quer <em>reler depois.</em></h1>
+        <p class="kicker" data-en="A browser extension that keeps articles, selections and links somewhere that is actually yours — not on somebody else's server." data-pt="Uma extensão de navegador que guarda artigos, trechos e links num lugar que é seu de verdade — não no servidor de outra pessoa.">Uma extensão de navegador que guarda artigos, trechos e links num lugar que é seu de verdade — não no servidor de outra pessoa.</p>
+        <div class="badges">
+          <span class="badge" data-en="<strong>free</strong> ♡" data-pt="<strong>grátis</strong> ♡"><strong>grátis</strong> ♡</span>
+          <span class="badge" data-en="open source" data-pt="código aberto">código aberto</span>
+          <span class="badge" data-en="no account" data-pt="sem conta">sem conta</span>
+          <span class="badge" data-en="works offline" data-pt="funciona offline">funciona offline</span>
+        </div>
       </div>
 
-      <h2>What it does</h2>
-      <ul class="features">
-        <li>
-          <strong>Save a whole page</strong>
-          <span>The readable article text, without the navigation and ads.</span>
-        </li>
-        <li>
-          <strong>Save a selection</strong>
-          <span>Highlight a paragraph, right-click, done.</span>
-        </li>
-        <li>
-          <strong>Read it back in place</strong>
-          <span>Expand any capture in the popup — no round trip to another app.</span>
-        </li>
-        <li>
-          <strong>Sync through your own Drive</strong>
-          <span>A private folder only this extension can see. Optional.</span>
-        </li>
-      </ul>
-
-      <h2>Privacy</h2>
-      <p>
-        The extension reads a page only when you ask it to save that page, and only the tab
-        you are looking at. It does not track browsing, does not run in the background on
-        sites you visit, and sends nothing to the developer. The source is public, so you do
-        not have to take that on trust.
-      </p>
-
-      <div class="links">
-        <a class="primary" href="https://github.com/caroljardims/content-saver">Source on GitHub</a>
-        <a href="./privacy.html">Privacy Policy</a>
-        <a href="./terms.html">Terms of Service</a>
+      <div class="stack" aria-hidden="true">
+        <div class="tape"></div>
+        <div class="save-card c1">
+          <div class="site">longreads.com</div>
+          <div class="ttl" data-en="the piece you swore you'd read later" data-pt="o texto que você jurou ler depois">o texto que você jurou ler depois</div>
+          <div class="lines"><span></span><span></span><span></span></div>
+        </div>
+        <div class="save-card c2">
+          <div class="site" data-en="some blog" data-pt="um blog qualquer">um blog qualquer</div>
+          <div class="ttl" data-en="that one good paragraph" data-pt="aquele parágrafo bom">aquele parágrafo bom</div>
+          <div class="lines"><span></span><span></span><span></span></div>
+        </div>
+        <div class="save-card c3">
+          <div class="site" data-en="recipes" data-pt="receitas">receitas</div>
+          <div class="ttl" data-en="sourdough, eventually" data-pt="pão de fermentação natural">pão de fermentação natural</div>
+          <div class="lines"><span></span><span></span><span></span></div>
+        </div>
       </div>
+    </div>
 
-      <footer>Free and open source, released under the MIT License.</footer>
-    </main>
-  </body>
+    <div class="lede" data-en="<strong>There is no server behind this.</strong> No account to create, no database holding your reading, no analytics. Everything saves to your own browser first, so it is instant and works offline. Connect your Google Drive and it syncs between browsers through your own account." data-pt="<strong>Não existe servidor atrás disso.</strong> Nenhuma conta pra criar, nenhum banco de dados guardando suas leituras, nenhum analytics. Tudo é salvo primeiro no seu próprio navegador — então é instantâneo e funciona offline. Se quiser, conecte seu Google Drive e sincronize entre navegadores pela sua própria conta."><strong>Não existe servidor atrás disso.</strong> Nenhuma conta pra criar, nenhum banco de dados guardando suas leituras, nenhum analytics. Tudo é salvo primeiro no seu próprio navegador — então é instantâneo e funciona offline. Se quiser, conecte seu Google Drive e sincronize entre navegadores pela sua própria conta.</div>
+  </div>
+
+  <!-- ==================================================
+       Features
+       ================================================== -->
+  <section>
+    <span class="section-label" data-en="what it does —" data-pt="o que ela faz —">o que ela faz —</span>
+    <h2 class="section-title" data-en="four things, <em>done well.</em>" data-pt="quatro coisinhas, <em>bem feitas.</em>">quatro coisinhas, <em>bem feitas.</em></h2>
+
+    <div class="features">
+      <div class="feature">
+        <span class="num">01</span>
+        <h3 data-en="Save the whole page" data-pt="Salvar a página inteira">Salvar a página inteira</h3>
+        <p data-en="The readable article text — no menus, no banners, no ads." data-pt="Só o texto do artigo — sem menu, sem banner, sem anúncio.">Só o texto do artigo — sem menu, sem banner, sem anúncio.</p>
+      </div>
+      <div class="feature">
+        <span class="num">02</span>
+        <h3 data-en="Save just a bit" data-pt="Salvar só um trecho">Salvar só um trecho</h3>
+        <p data-en="Highlight the paragraph, right-click, done." data-pt="Seleciona o parágrafo, botão direito, pronto.">Seleciona o parágrafo, botão direito, pronto.</p>
+      </div>
+      <div class="feature">
+        <span class="num">03</span>
+        <h3 data-en="Read it back right there" data-pt="Reler ali mesmo">Reler ali mesmo</h3>
+        <p data-en="Open any capture inside the popup — no trip to another app." data-pt="Abre qualquer captura no próprio popup — sem passear por outro app.">Abre qualquer captura no próprio popup — sem passear por outro app.</p>
+      </div>
+      <div class="feature">
+        <span class="num">04</span>
+        <h3 data-en="Sync through your Drive" data-pt="Sincronizar no seu Drive">Sincronizar no seu Drive</h3>
+        <p data-en="A private folder only this extension can see. Optional, always." data-pt="Uma pasta privada que só a extensão enxerga. Opcional, sempre.">Uma pasta privada que só a extensão enxerga. Opcional, sempre.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================
+       Privacy
+       ================================================== -->
+  <section>
+    <span class="section-label" data-en="the honest part —" data-pt="a parte honesta —">a parte honesta —</span>
+    <h2 class="section-title" data-en="it reads a page <em>only when you ask.</em>" data-pt="ela lê a página <em>só quando você pede.</em>">ela lê a página <em>só quando você pede.</em></h2>
+    <p class="note" data-en="Only the tab you are looking at, only at the moment you click save. It does not track your browsing, does not run in the background on the sites you visit, does not keep history, and sends nothing to me. <span class='hand'>and the source is public, so you don't have to take my word for it.</span>" data-pt="Só a aba que você está olhando, só no momento em que você clica em salvar. Ela não rastreia sua navegação, não fica rodando de fundo nos sites que você visita, não guarda histórico e não me manda nada. <span class='hand'>e o código é público, então você não precisa acreditar em mim.</span>">Só a aba que você está olhando, só no momento em que você clica em salvar. Ela não rastreia sua navegação, não fica rodando de fundo nos sites que você visita, não guarda histórico e não me manda nada. <span class="hand">e o código é público, então você não precisa acreditar em mim.</span></p>
+
+    <div class="links">
+      <a class="primary" href="https://github.com/caroljardims/content-saver" target="_blank" rel="noopener noreferrer" data-en="code on GitHub" data-pt="código no GitHub">código no GitHub</a>
+      <a href="./privacy.html" data-en="privacy policy" data-pt="política de privacidade">política de privacidade</a>
+      <a href="./terms.html" data-en="terms of service" data-pt="termos de uso">termos de uso</a>
+    </div>
+  </section>
+
+  <!-- ==================================================
+       Coffee / apoio
+       ================================================== -->
+  <div class="coffee">
+    <span class="section-label" data-en="a small favor —" data-pt="um pequeno favor —">um pequeno favor —</span>
+    <h2 data-en="you could <em>buy me a coffee.</em>" data-pt="você pode <em>me pagar um café.</em>">você pode <em>me pagar um café.</em></h2>
+    <p data-en="This one is free and stays free. A coffee buys a few more hours of tinkering — one more fix, one more tiny feature nobody asked for. <span class='hand'>and i will like you very much for it.</span>" data-pt="Essa aqui é grátis e continua grátis. Um café compra mais algumas horas de invenção — mais um ajuste, mais uma funcionalidadezinha que ninguém pediu. <span class='hand'>e eu vou gostar mais de você por isso.</span>">Essa aqui é grátis e continua grátis. Um café compra mais algumas horas de invenção — mais um ajuste, mais uma funcionalidadezinha que ninguém pediu. <span class="hand">e eu vou gostar mais de você por isso.</span></p>
+    <div class="coffee-btns">
+      <a class="primary" href="https://caroljardims.com.br/pix" style="display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);border-radius:999px;padding:11px 20px;text-decoration:none;background:var(--ink);color:var(--bg);font-weight:600;font-size:15px;">💸 <span data-en="pix (brazil)" data-pt="pagar via pix">pagar via pix</span></a>
+      <a href="https://buymeacoffee.com/caroljardims" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:11px 20px;text-decoration:none;background:var(--cream);color:var(--ink);font-size:15px;">☕ <span data-en="buy me a coffee" data-pt="me paga um café">me paga um café</span></a>
+    </div>
+    <p class="caveat" data-en="(no pressure though — a kind note is also a very acceptable currency ♡)" data-pt="(sem pressão — um recado carinhoso também é uma moeda muito aceitável ♡)">(sem pressão — um recado carinhoso também é uma moeda muito aceitável ♡)</p>
+  </div>
+
+  <footer>
+    <div class="sign" data-en="made with care, at a sensible pace ♡" data-pt="feito com carinho, num ritmo tranquilo ♡">feito com carinho, num ritmo tranquilo ♡</div>
+    <div data-en="free and open source, under the MIT License · © 2026 caroljardims" data-pt="livre e de código aberto, sob a licença MIT · © 2026 caroljardims">livre e de código aberto, sob a licença MIT · © 2026 caroljardims</div>
+  </footer>
+
+</div>
+
+<script>
+/* ==================================================
+   Language toggle — compartilha o 'lang' com a home
+   ================================================== */
+(function () {
+  function read() {
+    try { return localStorage.getItem('lang'); } catch (e) { return null; }
+  }
+  function save(l) {
+    try { localStorage.setItem('lang', l); } catch (e) {}
+  }
+
+  var lang = read() || 'pt';
+
+  function applyLang(l) {
+    lang = l;
+    save(l);
+    document.documentElement.lang = l === 'pt' ? 'pt-BR' : 'en';
+    document.querySelectorAll('[data-en]').forEach(function (el) {
+      el.innerHTML = el.dataset[l];
+    });
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = l === 'pt' ? '🇺🇸' : '🇧🇷';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyLang(lang);
+    var btn = document.getElementById('lang-toggle');
+    if (btn) btn.addEventListener('click', function () {
+      applyLang(lang === 'pt' ? 'en' : 'pt');
+    });
+  });
+})();
+</script>
+
+</body>
 </html>
