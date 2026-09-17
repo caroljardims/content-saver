@@ -1,6 +1,6 @@
 {
   "name": "content-saver",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Save links, selections and article text to your own cloud storage.",

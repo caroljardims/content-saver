@@ -1,7 +1,6 @@
 import { browser } from 'wxt/browser';
 import { activeAdapter, adapterById, setActiveAdapter } from '../adapters/registry';
 import { listRemoteFiles } from '../adapters/gdrive';
-import { exportCaptureToDrive } from '../adapters/gdrive-export';
 import * as db from '../core/db';
 import { save, status, sync } from '../core/engine';
 import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core/model';
@@ -100,6 +99,8 @@ async function ensureSyncAlarm(): Promise<void> {
  * to tell "upload never happened" from "download is broken".
  */
 function exposeDebugHandle(): void {
+  if (!import.meta.env.DEV) return;
+
   Object.assign(globalThis, {
     cs: {
       /** What Drive actually holds right now. */
@@ -243,13 +244,6 @@ async function handle(message: Message): Promise<Response> {
       const existing = await db.get(message.id);
       if (!existing) return { ok: false, error: 'Not found' };
       return { ok: true, capture: toCapture(existing) };
-    }
-
-    case 'capture:export': {
-      const existing = await db.get(message.id);
-      if (!existing) return { ok: false, error: 'Not found' };
-      const { link } = await exportCaptureToDrive(toCapture(existing));
-      return { ok: true, link };
     }
 
     case 'list':

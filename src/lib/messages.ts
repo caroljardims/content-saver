@@ -29,7 +29,6 @@ export type Message =
   | { type: 'capture:delete'; id: string }
   | { type: 'capture:update'; id: string; patch: Partial<Capture> }
   | { type: 'capture:get'; id: string }
-  | { type: 'capture:export'; id: string }
   | { type: 'list' }
   | { type: 'sync'; interactive?: boolean }
   | { type: 'status' }
@@ -42,7 +41,6 @@ export type Response =
   | { ok: true; captures: CaptureSummary[] }
   | { ok: true; status: SyncStatus }
   | { ok: true; report: SyncReport }
-  | { ok: true; link: string }
   | { ok: true }
   | { ok: false; error: string };
 
