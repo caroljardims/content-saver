@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { activeAdapter, setActiveAdapter } from '../adapters/registry';
+import { activeAdapter, adapterById, setActiveAdapter } from '../adapters/registry';
 import * as db from '../core/db';
 import { save, status, sync } from '../core/engine';
 import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core/model';
@@ -217,8 +217,12 @@ async function handle(message: Message): Promise<Response> {
       return { ok: true, status: await status() };
 
     case 'adapter:connect': {
-      const adapter = await activeAdapter();
+      // Connect FIRST, persist only on success. Switching the active adapter
+      // up front left a failed connection stranded on a backend that cannot
+      // authenticate, with no way back to local-only.
+      const adapter = adapterById(message.id);
       await adapter.connect({ interactive: true });
+      await setActiveAdapter(message.id);
       await sync({ interactive: true });
       return { ok: true, status: await status() };
     }
@@ -226,6 +230,7 @@ async function handle(message: Message): Promise<Response> {
     case 'adapter:disconnect': {
       const adapter = await activeAdapter();
       await adapter.disconnect();
+      await setActiveAdapter('none');
       return { ok: true, status: await status() };
     }
   }

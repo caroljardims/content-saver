@@ -21,6 +21,13 @@ export function available(): SyncAdapter[] {
   return Object.values(adapters).filter((a): a is SyncAdapter => a !== null);
 }
 
+/** Look an adapter up without making it active. */
+export function adapterById(id: AdapterId): SyncAdapter {
+  const adapter = adapters[id];
+  if (!adapter) throw new Error(`Adapter "${id}" is not implemented yet`);
+  return adapter;
+}
+
 export async function activeAdapter(): Promise<SyncAdapter> {
   const id = (await getMeta<AdapterId>('adapterId')) ?? 'none';
   return adapters[id] ?? noneAdapter;

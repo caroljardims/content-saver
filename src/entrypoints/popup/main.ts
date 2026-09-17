@@ -11,6 +11,7 @@ const els = {
   sync: $<HTMLButtonElement>('sync'),
   connect: $<HTMLButtonElement>('connect'),
   connectRow: $('connect-row'),
+  disconnect: $<HTMLButtonElement>('disconnect'),
   status: $('status'),
   list: $<HTMLUListElement>('list'),
 };
@@ -198,7 +199,11 @@ function renderStatus(status: SyncStatus): void {
       ? 'px-4 pb-2 text-xs text-red-600'
       : 'px-4 pb-2 text-xs text-slate-500';
 
-  els.connectRow.classList.toggle('hidden', status.adapterId !== 'none');
+  // Keyed off the live connection, not the stored adapter id. Keying it off
+  // the id meant a failed connection hid the only button that could retry it.
+  const linked = status.adapterId !== 'none' && status.connected;
+  els.connectRow.classList.toggle('hidden', linked);
+  els.disconnect.classList.toggle('hidden', !linked);
 }
 
 async function refresh(): Promise<void> {
@@ -241,9 +246,13 @@ els.sync.addEventListener('click', () =>
 
 els.connect.addEventListener('click', () =>
   withBusy(els.connect, async () => {
-    await send({ type: 'adapter:set', id: 'gdrive' });
-    await send({ type: 'adapter:connect' });
+    const res = await send({ type: 'adapter:connect', id: 'gdrive' });
+    if (!res.ok) throw new Error(res.error);
   }),
+);
+
+els.disconnect.addEventListener('click', () =>
+  withBusy(els.disconnect, () => send({ type: 'adapter:disconnect' })),
 );
 
 void refresh();

@@ -10,6 +10,27 @@ function hasNativeAuth(): boolean {
   return typeof chrome !== 'undefined' && typeof chrome.identity?.getAuthToken === 'function';
 }
 
+function nativeClientId(): string | undefined {
+  const manifest = browser.runtime.getManifest() as { oauth2?: { client_id?: string } };
+  const id = manifest.oauth2?.client_id;
+  return id && !id.startsWith('REPLACE_ME') ? id : undefined;
+}
+
+function webClientId(): string | undefined {
+  return import.meta.env.WXT_GOOGLE_WEB_CLIENT_ID || undefined;
+}
+
+/**
+ * Fail with something a human can act on. Without this the user is handed
+ * a raw Google error page, which says nothing about the real cause.
+ */
+function assertConfigured(): void {
+  if (nativeClientId() || webClientId()) return;
+  throw new Error(
+    'Google Drive is not set up yet. Add your OAuth client ID to .env and rebuild - see the README.',
+  );
+}
+
 // --- Chrome path ------------------------------------------------------
 
 function chromeToken(interactive: boolean): Promise<string> {
@@ -50,7 +71,7 @@ let webToken: CachedToken | null = null;
 async function webAuthToken(interactive: boolean): Promise<string> {
   if (webToken && webToken.expiresAt > Date.now() + 60_000) return webToken.token;
 
-  const clientId = import.meta.env.WXT_GOOGLE_WEB_CLIENT_ID;
+  const clientId = webClientId();
   if (!clientId) throw new Error('WXT_GOOGLE_WEB_CLIENT_ID is not set');
 
   const redirectUri = browser.identity.getRedirectURL();
@@ -89,7 +110,21 @@ async function webAuthToken(interactive: boolean): Promise<string> {
  * place that knows Chrome and Firefox authenticate differently.
  */
 export async function getToken({ interactive = false } = {}): Promise<string> {
-  return hasNativeAuth() ? chromeToken(interactive) : webAuthToken(interactive);
+  assertConfigured();
+
+  // getAuthToken exists in every Chromium build, but only actually works in
+  // Google Chrome with a signed-in profile. Arc, Brave and Vivaldi expose it
+  // and then fail, so treat a failure as "use the web flow instead" rather
+  // than as fatal.
+  if (hasNativeAuth() && nativeClientId()) {
+    try {
+      return await chromeToken(interactive);
+    } catch (error) {
+      if (!webClientId()) throw error;
+    }
+  }
+
+  return webAuthToken(interactive);
 }
 
 export async function invalidateToken(token: string): Promise<void> {

@@ -33,7 +33,7 @@ export type Message =
   | { type: 'sync'; interactive?: boolean }
   | { type: 'status' }
   | { type: 'adapter:set'; id: AdapterId }
-  | { type: 'adapter:connect' }
+  | { type: 'adapter:connect'; id: AdapterId }
   | { type: 'adapter:disconnect' };
 
 export type Response =
