@@ -105,6 +105,8 @@ and the consent screen can be set to In production directly.
 ## Assets still needed
 
 - [ ] At least one screenshot, 1280×800 or 640×400
-- [ ] Privacy policy at a public URL — upload `docs/privacy.html` to your own
+- [ ] Privacy policy and terms at public URLs (`docs/privacy.html`,
+      `docs/terms.html`)
+- [ ] ~~Privacy policy at a public URL~~ — upload `docs/privacy.html` to your own
       domain, then paste the direct URL into the dashboard
 - [ ] Promotional tile 440×280 (optional)
