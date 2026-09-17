@@ -54,7 +54,7 @@ extension can see. It has no access to the rest of your Drive.
 
 OPEN SOURCE
 
-https://github.com/caroljardims/content-saver
+https://github.com/caroljardims/necessaire
 ```
 
 ## Permission justifications

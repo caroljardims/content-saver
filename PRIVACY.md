@@ -80,4 +80,4 @@ date. Material changes will be noted in the extension's release notes.
 ## Contact
 
 Questions or concerns: open an issue at
-<https://github.com/caroljardims/content-saver/issues>.
+<https://github.com/caroljardims/necessaire/issues>.

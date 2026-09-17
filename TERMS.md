@@ -64,8 +64,8 @@ terms.
 ## 8. License
 
 The source code is released under the MIT License. See
-[LICENSE](https://github.com/caroljardims/content-saver/blob/main/LICENSE).
+[LICENSE](https://github.com/caroljardims/necessaire/blob/main/LICENSE).
 
 ## 9. Contact
 
-Questions: <https://github.com/caroljardims/content-saver/issues>
+Questions: <https://github.com/caroljardims/necessaire/issues>
