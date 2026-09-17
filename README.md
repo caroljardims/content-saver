@@ -99,7 +99,7 @@ Needed only for Drive sync. Skip it entirely if you just want local saves.
    > no app review, no demo video, no domain verification. The consent screen
    > can move straight to production with unlimited users.
 
-5. **Pin the extension ID.** The OAuth client is bound to one extension ID, and an unpacked extension's ID changes with its folder path. Click *Pack extension* at `chrome://extensions` once to get a `.pem`, derive the base64 public key from it, and set `WXT_EXTENSION_KEY` in `.env`.
+5. **Pin the extension ID.** The OAuth client is bound to one extension ID, and an unpacked extension's ID changes with its folder path. See [Pinning the extension ID](#pinning-the-extension-id) below.
 
 6. **Create the Chrome client.** *Credentials → Create Credentials → OAuth client ID* → type **Chrome Extension** → paste the extension ID. Put the client ID in `.env` as `WXT_GOOGLE_CLIENT_ID`.
 
@@ -108,6 +108,32 @@ Needed only for Drive sync. Skip it entirely if you just want local saves.
 8. **Reload and test.** The first interactive auth shows an "unverified app" warning — expected in Testing mode; continue via *Advanced*.
 
 Copy `.env.example` to `.env` and fill in what you created.
+
+### Pinning the extension ID
+
+An unpacked extension's ID is derived from the folder it loads from, so it
+changes whenever that folder moves — and the Chrome OAuth client is bound to
+exactly one ID. Pinning keeps local development pointed at the registered
+client.
+
+1. Click *Pack extension* at `chrome://extensions` once. Keep the `.pem` it
+   produces outside the repo (`*.pem` is gitignored) and back it up: it is the
+   only thing that reproduces this ID.
+2. Derive the base64 public key and set `WXT_EXTENSION_KEY` in `.env`:
+
+   ```bash
+   openssl rsa -in necessaire-key.pem -pubout -outform DER | base64 | tr -d '\n'
+   ```
+
+3. `wxt build` and `wxt dev` copy it into the manifest as `key`.
+
+**Store packages must not carry it.** The published item has its own key,
+assigned by Google at first publish, and rejects any upload whose manifest
+claims a different one — *"key field value in the manifest doesn't match the
+current item."* `npm run zip:all` sets `STORE_BUILD=1`, which makes the
+`build:manifestGenerated` hook in `wxt.config.ts` drop the key; a plain build
+keeps it. `STORE_BUILD` is deliberately not a `WXT_` variable: those are read
+from `.env`, which overrides whatever the shell sets.
 
 ## Known constraints
 
@@ -151,6 +177,12 @@ across updates. A new version is only ever: bump, build, upload, submit.
    the [dashboard](https://chrome.google.com/webstore/devconsole) under
    *Package → Upload new package*, then submit for review. Updates are usually
    reviewed faster than a first submission.
+
+   Upload that file specifically. `necessaire-<version>-sources.zip` is for
+   addons.mozilla.org and has no manifest at its root ("No manifest found in
+   package"), and the Firefox zip carries the Firefox manifest. The Chrome zip
+   must also ship without a manifest `key`, which `npm run release` takes care
+   of — see [Pinning the extension ID](#pinning-the-extension-id).
 
 4. Installed copies update themselves within a few hours; Chrome polls for new
    versions on its own.
