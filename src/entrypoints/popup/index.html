@@ -9,7 +9,10 @@
   <body class="w-[380px]">
     <header class="flex items-center justify-between px-4 pt-4 pb-3">
       <h1 class="flex items-center gap-2 text-sm font-semibold tracking-tight">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 size-4 text-clay"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <!-- The toolbar icon itself, so the popup and the browser chrome agree.
+             The 128px source is downscaled by the browser, which keeps it sharp
+             on retina where a 16px file would not be. -->
+        <img src="/icon/128.png" alt="" aria-hidden="true" class="shrink-0 size-5" />
         Nécessaire
       </h1>
       <button
