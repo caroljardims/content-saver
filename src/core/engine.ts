@@ -22,17 +22,44 @@ export interface SyncStatus {
   lastError?: string;
   pending: number;
   needsAttention: number;
+  /** Pending items that have already failed at least once. */
+  failing: number;
 }
 
 /** Guards against overlapping runs when an alarm fires mid-sync. */
 let running: Promise<SyncReport> | null = null;
 
+/** A sync was requested while one was already in flight. */
+let rerunRequested = false;
+
 const BACKOFF_MS = [60_000, 5 * 60_000, 15 * 60_000, 60 * 60_000];
 
+/**
+ * Coalescing alone was not enough. push() works from a snapshot of the outbox
+ * taken when the run starts, so anything saved mid-run was not in that
+ * snapshot - and its own sync() call just joined the run already in progress
+ * instead of scheduling another. Saving two pages quickly left the second one
+ * pending until the next alarm, five minutes later, while the status line
+ * cheerfully said "synced just now".
+ */
 export function sync(opts: { interactive?: boolean } = {}): Promise<SyncReport> {
-  running ??= runSync(opts).finally(() => {
+  if (running) {
+    rerunRequested = true;
+    return running;
+  }
+
+  running = (async () => {
+    let report = await runSync(opts);
+    while (rerunRequested) {
+      rerunRequested = false;
+      report = await runSync(opts);
+    }
+    return report;
+  })().finally(() => {
     running = null;
+    rerunRequested = false;
   });
+
   return running;
 }
 
@@ -189,6 +216,7 @@ export async function status(): Promise<SyncStatus> {
     lastError: await db.getMeta<string>('lastError'),
     pending: all.filter((r) => r.dirty === 1 && !r.needsAttention).length,
     needsAttention: all.filter((r) => r.needsAttention).length,
+    failing: all.filter((r) => r.dirty === 1 && r.attempts > 0 && !r.needsAttention).length,
   };
 }
 

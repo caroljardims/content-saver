@@ -193,11 +193,16 @@ function renderStatus(status: SyncStatus): void {
   if (status.needsAttention > 0) parts.push(`${status.needsAttention} failed`);
   if (status.lastSyncAt) parts.push(`synced ${relative(status.lastSyncAt)}`);
 
+  // Surface the error as soon as something starts failing. Waiting for the
+  // fifth attempt meant "1 to upload - synced just now" sat there looking
+  // merely slow while it was actually broken.
+  const broken = status.needsAttention > 0 || status.failing > 0;
+  if (broken && status.lastError) parts.push(status.lastError);
+
   els.status.textContent = parts.join(' · ');
-  els.status.className =
-    status.needsAttention > 0
-      ? 'px-4 pb-2 text-xs text-red-600'
-      : 'px-4 pb-2 text-xs text-slate-500';
+  els.status.className = broken
+    ? 'px-4 pb-2 text-xs text-red-600'
+    : 'px-4 pb-2 text-xs text-slate-500';
 
   // Keyed off the live connection, not the stored adapter id. Keying it off
   // the id meant a failed connection hid the only button that could retry it.
