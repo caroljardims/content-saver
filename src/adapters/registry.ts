@@ -1,4 +1,4 @@
-import { getMeta, setMeta } from '../core/db';
+import { getMeta, markAllDirty, setMeta } from '../core/db';
 import { driveAdapter } from './gdrive';
 import { noneAdapter } from './none';
 import type { AdapterId, SyncAdapter } from './types';
@@ -42,5 +42,6 @@ export async function setActiveAdapter(id: AdapterId): Promise<SyncAdapter> {
   if (!adapter) throw new Error(`Adapter "${id}" is not implemented yet`);
   await setMeta('adapterId', id);
   await setMeta('cursor', undefined);
+  await markAllDirty();
   return adapter;
 }

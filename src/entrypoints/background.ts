@@ -8,15 +8,13 @@ import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core
 import type { CaptureSummary, Extraction, Message, Response } from '../lib/messages';
 
 const SYNC_ALARM = 'sync';
+const SYNC_PERIOD_MINUTES = 1;
 const CONTENT_SCRIPT = 'content-scripts/content.js';
 
 export default defineBackground(() => {
   exposeDebugHandle();
 
-  // Created on every worker start, not just on install: alarms.create is
-  // idempotent by name, and doing it here means an existing install picks up
-  // a changed interval instead of keeping the one from its install day.
-  void browser.alarms.create(SYNC_ALARM, { periodInMinutes: 1 });
+  void ensureSyncAlarm();
 
   browser.runtime.onInstalled.addListener(async () => {
     browser.contextMenus.create({
@@ -82,6 +80,19 @@ export default defineBackground(() => {
     }));
   });
 });
+
+/**
+ * Creating an alarm restarts its countdown. The worker wakes on every popup
+ * open and every save, so unconditionally re-creating the alarm there kept
+ * pushing the next fire a minute into the future - on an active browser it
+ * could go a long time without ever firing. Only touch it when it is missing
+ * or its period actually changed.
+ */
+async function ensureSyncAlarm(): Promise<void> {
+  const existing = await browser.alarms.get(SYNC_ALARM);
+  if (existing?.periodInMinutes === SYNC_PERIOD_MINUTES) return;
+  await browser.alarms.create(SYNC_ALARM, { periodInMinutes: SYNC_PERIOD_MINUTES });
+}
 
 /**
  * Debug handle, reachable from the service worker console as `cs`.

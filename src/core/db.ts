@@ -151,6 +151,36 @@ export async function purgeTombstones(olderThanDays = 90): Promise<number> {
   return purged;
 }
 
+/**
+ * Put everything back in the outbox.
+ *
+ * Called when the backend changes: the new one has never seen any of these,
+ * including everything captured while local-only, which the null adapter has
+ * already reported as "pushed". Without this, connecting an account backs up
+ * nothing you saved before connecting it.
+ */
+export async function markAllDirty(): Promise<number> {
+  const database = await db();
+  const tx = database.transaction('captures', 'readwrite');
+  let requeued = 0;
+
+  for (const record of await tx.store.getAll()) {
+    await tx.store.put({
+      ...record,
+      dirty: 1,
+      attempts: 0,
+      needsAttention: false,
+      // The id belongs to the old backend; the new one will assign its own.
+      remoteId: undefined,
+      etag: undefined,
+    });
+    requeued += 1;
+  }
+
+  await tx.done;
+  return requeued;
+}
+
 export async function clear(): Promise<void> {
   const database = await db();
   await database.clear('captures');
