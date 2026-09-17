@@ -94,6 +94,64 @@ async function bodyFor(capture: CaptureSummary): Promise<string> {
   return text;
 }
 
+/**
+ * Pending note saves, keyed by capture id.
+ *
+ * A popup can be dismissed at any moment, so a debounce alone would quietly
+ * lose the last thing typed. Anything still pending is flushed on pagehide.
+ */
+const pendingNotes = new Map<string, string>();
+
+async function flushNote(id: string): Promise<void> {
+  const notes = pendingNotes.get(id);
+  if (notes === undefined) return;
+  pendingNotes.delete(id);
+  await send({ type: 'capture:update', id, patch: { notes } });
+}
+
+window.addEventListener('pagehide', () => {
+  for (const id of [...pendingNotes.keys()]) void flushNote(id);
+});
+
+function buildNotes(capture: CaptureSummary): HTMLDivElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'mt-2';
+
+  const field = document.createElement('textarea');
+  field.rows = 2;
+  field.value = capture.notes ?? '';
+  field.placeholder = 'Notes, thoughts...';
+  field.className =
+    'w-full resize-y rounded-xl border border-line bg-surface p-2.5 text-xs leading-relaxed text-ink placeholder:text-muted focus:border-clay focus:outline-none';
+
+  const state = document.createElement('span');
+  state.className = 'mt-1 block text-right text-[10px] text-muted opacity-0 transition-opacity';
+  state.textContent = 'Saved';
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const save = async () => {
+    clearTimeout(timer);
+    if (!pendingNotes.has(capture.id)) return;
+    await flushNote(capture.id);
+    capture.notes = field.value;
+    state.style.opacity = '1';
+    setTimeout(() => (state.style.opacity = '0'), 1200);
+  };
+
+  field.addEventListener('input', () => {
+    pendingNotes.set(capture.id, field.value);
+    clearTimeout(timer);
+    timer = setTimeout(() => void save(), 600);
+  });
+
+  // Leaving the field commits immediately rather than waiting out the debounce.
+  field.addEventListener('blur', () => void save());
+
+  wrap.append(field, state);
+  return wrap;
+}
+
 function buildPanel(capture: CaptureSummary): HTMLDivElement {
   const panel = document.createElement('div');
   // pt-1.5 so the body is not flush against the row's meta line.
@@ -147,7 +205,7 @@ function buildPanel(capture: CaptureSummary): HTMLDivElement {
 
   actions.append(open, copy, share);
 
-  panel.append(body, actions);
+  panel.append(body, buildNotes(capture), actions);
 
   void bodyFor(capture).then((text) => {
     // textContent, never innerHTML: this is arbitrary text from a web page.
