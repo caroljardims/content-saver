@@ -51,11 +51,17 @@ export default defineConfig({
     // Firefox ignores this block and falls back to launchWebAuthFlow.
     ...(browser === 'chrome'
       ? {
-          oauth2: {
-            client_id:
-              process.env.WXT_GOOGLE_CLIENT_ID ?? 'REPLACE_ME.apps.googleusercontent.com',
-            scopes: ['https://www.googleapis.com/auth/drive.appdata'],
-          },
+          // Only emitted when a client is actually configured. Chromium
+          // rejects the manifest outright if oauth2.client_id is empty, and
+          // browsers other than Chrome never use this block anyway.
+          ...(process.env.WXT_GOOGLE_CLIENT_ID
+            ? {
+                oauth2: {
+                  client_id: process.env.WXT_GOOGLE_CLIENT_ID,
+                  scopes: ['https://www.googleapis.com/auth/drive.appdata'],
+                },
+              }
+            : {}),
           // Pins the extension ID so it matches the registered OAuth client.
           // See README, "Pinning the extension ID".
           ...(process.env.WXT_EXTENSION_KEY ? { key: process.env.WXT_EXTENSION_KEY } : {}),
