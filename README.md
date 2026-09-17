@@ -46,7 +46,7 @@ npm run build
 ```
 capture ──▶ IndexedDB (done — the UI updates here) ──▶ outbox
                                                           │
-  alarm (5 min) / manual / on-connect ───────────────────▶ │
+  alarm (1 min) / on save / on-connect ───────────────────▶ │
       pull(cursor) ─▶ merge into local ─▶ push(dirty) ─▶ advance cursor
 ```
 
