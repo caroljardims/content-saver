@@ -6,7 +6,12 @@ export default defineConfig({
 
   // Not the default ".output": a leading dot makes the folder hidden in
   // macOS file pickers, and "Load unpacked" needs you to navigate into it.
-  outDir: 'dist',
+  //
+  // Dev gets its own folder so a `wxt dev` run cannot overwrite the build
+  // sitting in `dist`. Sharing one folder means stopping the dev server
+  // leaves whatever Chrome has loaded pointing at a dead localhost:3000 for
+  // its scripts and styles, and the popup renders unstyled.
+  outDir: process.env.NODE_ENV === 'development' ? 'dist-dev' : 'dist',
 
   // MV3 on Firefox too (event page rather than service worker, handled by WXT).
   // The MV2 default would leave us without browser.action and browser.scripting,
@@ -29,6 +34,15 @@ export default defineConfig({
       manifest.host_permissions = manifest.host_permissions?.filter(
         (pattern) => !pattern.includes('://*/*') || pattern.startsWith('https://www.googleapis.com'),
       );
+
+      // The store item has its own key, assigned by Google at first publish,
+      // and rejects any upload whose manifest claims a different one. The key
+      // below only exists to pin the *unpacked* ID locally, so drop it from
+      // packages headed for the store. Not a WXT_ variable on purpose: those
+      // are read from .env, which would override whatever the shell sets.
+      if (process.env.STORE_BUILD) {
+        delete (manifest as unknown as Record<string, unknown>).key;
+      }
     },
   },
 

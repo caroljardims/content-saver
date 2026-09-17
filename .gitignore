@@ -8,3 +8,4 @@ stats.html
 .env.local
 *.pem
 .DS_Store
+dist-dev/

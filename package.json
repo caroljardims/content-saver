@@ -1,6 +1,6 @@
 {
   "name": "necessaire",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "Save links, selections and article text to your own cloud storage.",
@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "wxt prepare",
-    "zip:all": "wxt zip && wxt zip -b firefox",
+    "zip:all": "STORE_BUILD=1 wxt zip && STORE_BUILD=1 wxt zip -b firefox",
     "release": "npm run compile && npm test && npm run zip:all"
   },
   "dependencies": {
