@@ -1,6 +1,7 @@
 import type { Capture } from '../../core/model';
 import type { SyncStatus } from '../../core/engine';
 import { send, type CaptureSummary } from '../../lib/messages';
+import { icon, type IconName } from '../../lib/icons';
 import './style.css';
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -23,24 +24,30 @@ const expanded = new Set<string>();
  * A row action that reports its own outcome in place, then reverts. Saves
  * every button re-implementing the same disabled/label/restore dance.
  */
-function action(label: string, run: () => Promise<string>): HTMLButtonElement {
+function action(label: string, name: IconName, run: () => Promise<string>): HTMLButtonElement {
   const button = document.createElement('button');
-  button.className = 'rounded-full px-2 py-0.5 text-muted transition-colors hover:bg-soft hover:text-ink disabled:opacity-50';
-  button.textContent = label;
+  button.className =
+    'flex items-center gap-1 rounded-full px-2 py-1 text-muted transition-colors hover:bg-soft hover:text-ink disabled:opacity-50';
+
+  const glyph = icon(name);
+  const text = document.createElement('span');
+  text.textContent = label;
+  button.append(glyph, text);
 
   button.addEventListener('click', async () => {
     button.disabled = true;
-    const original = button.textContent;
-    button.textContent = '...';
+    text.textContent = '...';
     try {
-      button.textContent = await run();
+      text.textContent = await run();
+      glyph.replaceWith(icon('check'));
     } catch (error) {
-      button.textContent = error instanceof Error ? error.message.slice(0, 40) : 'Failed';
+      text.textContent = error instanceof Error ? error.message.slice(0, 40) : 'Failed';
       button.classList.add('text-rose');
     } finally {
       button.disabled = false;
       setTimeout(() => {
-        button.textContent = original;
+        text.textContent = label;
+        button.replaceChildren(icon(name), text);
         button.classList.remove('text-rose');
       }, 2000);
     }
@@ -105,15 +112,18 @@ function buildPanel(capture: CaptureSummary): HTMLDivElement {
   open.href = capture.url;
   open.target = '_blank';
   open.rel = 'noreferrer';
-  open.className = 'rounded-full px-2 py-0.5 text-clay underline decoration-clay/40 underline-offset-2 transition-colors hover:bg-soft';
-  open.textContent = 'Open original';
+  open.className =
+    'flex items-center gap-1 rounded-full px-2 py-1 text-clay transition-colors hover:bg-soft';
+  const openLabel = document.createElement('span');
+  openLabel.textContent = 'Open original';
+  open.append(icon('external'), openLabel);
 
-  const copy = action('Copy text', async () => {
+  const copy = action('Copy text', 'copy', async () => {
     await navigator.clipboard.writeText(bodies.get(capture.id) ?? '');
     return 'Copied';
   });
 
-  const share = action('Share', async () => {
+  const share = action('Share', 'share', async () => {
     const payload = {
       title: capture.title || capture.url,
       text: capture.excerpt || undefined,
@@ -161,9 +171,8 @@ function buildRow(capture: CaptureSummary): HTMLLIElement {
   toggle.className = 'flex min-w-0 flex-1 items-start gap-2 text-left';
   toggle.setAttribute('aria-expanded', String(expanded.has(capture.id)));
 
-  const caret = document.createElement('span');
-  caret.className = 'mt-0.5 shrink-0 text-[10px] text-clay transition-transform duration-150';
-  caret.textContent = '\u25b8';
+  const caret = icon('chevron', 'size-3.5 text-clay');
+  caret.classList.add('mt-0.5', 'transition-transform', 'duration-150');
 
   const text = document.createElement('span');
   text.className = 'min-w-0 flex-1';
@@ -183,9 +192,10 @@ function buildRow(capture: CaptureSummary): HTMLLIElement {
 
   const remove = document.createElement('button');
   remove.className =
-    'invisible shrink-0 rounded-full px-1.5 text-xs text-muted transition-colors group-hover:visible hover:text-rose';
-  remove.textContent = 'x';
+    'invisible shrink-0 rounded-full p-1.5 text-muted transition-colors group-hover:visible hover:bg-soft hover:text-rose';
+  remove.append(icon('trash'));
   remove.title = 'Delete';
+  remove.setAttribute('aria-label', 'Delete');
   remove.addEventListener('click', async () => {
     await send({ type: 'capture:delete', id: capture.id });
     expanded.delete(capture.id);
