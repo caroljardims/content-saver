@@ -96,7 +96,8 @@ async function bodyFor(capture: CaptureSummary): Promise<string> {
 
 function buildPanel(capture: CaptureSummary): HTMLDivElement {
   const panel = document.createElement('div');
-  panel.className = 'px-4 pb-3';
+  // pt-1.5 so the body is not flush against the row's meta line.
+  panel.className = 'px-4 pt-1.5 pb-3';
 
   const body = document.createElement('p');
   // max-h + overflow so a long article scrolls inside the row instead of
