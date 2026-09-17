@@ -1,14 +1,14 @@
-# Privacy Policy — Content Saver
+# Privacy Policy — Nécessaire
 
 _Last updated: 16 September 2026_
 
-Content Saver is a browser extension that saves links, text selections and
+Nécessaire is a browser extension that saves links, text selections and
 article text so you can read them later. This policy describes exactly what it
 does with that data.
 
 ## The short version
 
-Content Saver has no servers. There is no backend, no database, no analytics
+Nécessaire has no servers. There is no backend, no database, no analytics
 and no account with us — there is no "us" to have an account with. Everything
 you save stays on your own device unless you choose to connect your own Google
 Drive, in which case it goes to your Drive and nowhere else.
@@ -64,12 +64,12 @@ disconnect your account.
   your Drive copy.
 - **Everything local:** removing the extension deletes its local storage.
 - **Everything in Drive:** go to Google Drive → Settings → Manage apps →
-  Content Saver → Delete hidden app data. Because the application folder is
+  Nécessaire → Delete hidden app data. Because the application folder is
   hidden, this is the only way to remove it, and it cannot be undone.
 
 ## Children
 
-Content Saver is not directed at children and collects no personal information
+Nécessaire is not directed at children and collects no personal information
 from anyone.
 
 ## Changes

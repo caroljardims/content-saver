@@ -6,7 +6,7 @@ version-controlled alongside what it describes.
 ## Name
 
 ```
-Content Saver
+Nécessaire
 ```
 
 ## Summary (132 characters max)
@@ -22,7 +22,7 @@ Productivity → Workflow & Planning
 ## Detailed description
 
 ```
-Content Saver keeps the things you want to come back to — an article, a
+Nécessaire keeps the things you want to come back to — an article, a
 paragraph, a link — without handing them to anyone else.
 
 Everything you save is written to your own browser first, so saving is instant
@@ -76,7 +76,7 @@ them against the code.
 ## Single purpose statement
 
 ```
-Content Saver saves web content — links, text selections and article text — for
+Nécessaire saves web content — links, text selections and article text — for
 later reading, and optionally syncs it to the user's own Google Drive.
 ```
 

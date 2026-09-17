@@ -33,7 +33,7 @@ export default defineConfig({
   },
 
   manifest: ({ browser }) => ({
-    name: 'Content Saver',
+    name: 'Nécessaire',
     description: 'Save links, selections and article text to storage you own.',
 
     permissions: ['identity', 'activeTab', 'scripting', 'storage', 'alarms', 'contextMenus'],

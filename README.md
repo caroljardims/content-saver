@@ -1,4 +1,4 @@
-# Content Saver
+# Nécessaire
 
 A browser extension that saves links, text selections and article content to storage **you** own. No server, no database, no hosting bill.
 
@@ -147,7 +147,7 @@ across updates. A new version is only ever: bump, build, upload, submit.
    npm run release
    ```
 
-3. **Upload** `dist/content-saver-<version>-chrome.zip` to the existing item in
+3. **Upload** `dist/necessaire-<version>-chrome.zip` to the existing item in
    the [dashboard](https://chrome.google.com/webstore/devconsole) under
    *Package → Upload new package*, then submit for review. Updates are usually
    reviewed faster than a first submission.
@@ -164,7 +164,7 @@ across updates. A new version is only ever: bump, build, upload, submit.
   because `drive.appdata` is non-sensitive.
 - **No rollbacks.** There is no "unpublish this version" — fixing a bad release
   means publishing a higher version over it.
-- **Firefox is separate.** `dist/content-saver-<version>-firefox.zip` goes to
+- **Firefox is separate.** `dist/necessaire-<version>-firefox.zip` goes to
   addons.mozilla.org on its own schedule.
 
 ## License

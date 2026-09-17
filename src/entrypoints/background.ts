@@ -18,17 +18,17 @@ export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(async () => {
     browser.contextMenus.create({
       id: 'save-selection',
-      title: 'Save selection to Content Saver',
+      title: 'Save selection to Nécessaire',
       contexts: ['selection'],
     });
     browser.contextMenus.create({
       id: 'save-link',
-      title: 'Save link to Content Saver',
+      title: 'Save link to Nécessaire',
       contexts: ['link'],
     });
     browser.contextMenus.create({
       id: 'save-page',
-      title: 'Save this page to Content Saver',
+      title: 'Save this page to Nécessaire',
       contexts: ['page'],
     });
 
@@ -41,7 +41,7 @@ export default defineBackground(() => {
     try {
       await sync();
     } catch (error) {
-      console.warn('[content-saver] scheduled sync failed:', error);
+      console.warn('[necessaire] scheduled sync failed:', error);
     }
   });
 
@@ -58,7 +58,7 @@ export default defineBackground(() => {
       await flash(tab.id, 'Saved');
     } catch (error) {
       await flash(tab.id, 'Failed');
-      console.error('[content-saver]', error);
+      console.error('[necessaire]', error);
     }
   });
 

@@ -17,6 +17,9 @@ interface SaverDB extends DBSchema {
   };
 }
 
+// Deliberately still 'content-saver' after the rename to Nécessaire: the name is
+// the IndexedDB key, and changing it would orphan every capture already on
+// disk. Renaming it is a migration, not a find-and-replace.
 const DB_NAME = 'content-saver';
 const DB_VERSION = 1;
 

@@ -1,13 +1,13 @@
-# Terms of Service — Content Saver
+# Terms of Service — Nécessaire
 
 _Last updated: 16 September 2026_
 
-Content Saver is a free, open-source browser extension. By installing or using
+Nécessaire is a free, open-source browser extension. By installing or using
 it, you agree to these terms.
 
 ## 1. What this is
 
-Content Saver is software that runs entirely in your own browser. It is not a
+Nécessaire is software that runs entirely in your own browser. It is not a
 hosted service. There are no servers operated by the developer, no accounts,
 and no subscription. Nothing you save is transmitted to the developer.
 

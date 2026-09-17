@@ -114,12 +114,12 @@ async function toRemoteRecord(file: DriveFile): Promise<RemoteRecord | null> {
     if (!isValidCapture(raw)) {
       // Silently skipping a malformed file keeps sync robust, but silently
       // skipping ALL of them looks identical to "the download is broken".
-      console.warn('[content-saver] skipped unparseable remote file', file.name, raw);
+      console.warn('[necessaire] skipped unparseable remote file', file.name, raw);
       return null;
     }
     return { capture: normalizeCapture(raw), remoteId: file.id };
   } catch (error) {
-    console.warn('[content-saver] could not read remote file', file.name, error);
+    console.warn('[necessaire] could not read remote file', file.name, error);
     return null;
   }
 }
