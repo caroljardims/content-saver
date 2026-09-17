@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — Content Saver</title>
+    <meta
+      name="description"
+      content="Privacy policy for the Content Saver browser extension: no servers, no analytics, nothing leaves your device except to your own Google Drive."
+    />
+    <style>
+      :root {
+        --canvas: #faf4ec;
+        --surface: #fffcf7;
+        --soft: #f2e8da;
+        --line: #e7dbc9;
+        --ink: #3d342c;
+        --muted: #8a7a68;
+        --clay: #a85b3e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas: #201b17;
+          --surface: #292320;
+          --soft: #332b25;
+          --line: #3f352d;
+          --ink: #f1e7da;
+          --muted: #a89684;
+          --clay: #d4886a;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 3rem 1.25rem 5rem;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", system-ui, sans-serif;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      main { max-width: 42rem; margin: 0 auto; }
+      .mark {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        color: var(--clay); font-weight: 600; letter-spacing: -0.01em;
+      }
+      h1 { font-size: 1.9rem; line-height: 1.2; margin: 0.75rem 0 0.25rem; letter-spacing: -0.02em; }
+      h2 { font-size: 1.1rem; margin: 2.25rem 0 0.5rem; letter-spacing: -0.01em; }
+      .updated { color: var(--muted); font-size: 0.85rem; margin: 0 0 2rem; }
+      .lede {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 0.9rem; padding: 1rem 1.15rem; margin: 1.5rem 0 0;
+      }
+      ul { padding-left: 1.15rem; }
+      li { margin: 0.35rem 0; }
+      a { color: var(--clay); text-underline-offset: 2px; }
+      code {
+        background: var(--soft); padding: 0.1rem 0.35rem;
+        border-radius: 0.35rem; font-size: 0.85em; overflow-wrap: anywhere;
+      }
+      footer {
+        margin-top: 3rem; padding-top: 1.25rem;
+        border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+        Content Saver
+      </span>
+
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated 16 September 2026</p>
+
+      <div class="lede">
+        <strong>Content Saver has no servers.</strong> No backend, no database, no
+        analytics, and no account with us — there is no “us” to have an account with.
+        Everything you save stays on your own device, unless you choose to connect your
+        own Google Drive, in which case it goes to your Drive and nowhere else.
+      </div>
+
+      <h2>What is collected</h2>
+      <p>
+        Only what you explicitly save. When you click “Save page”, “Save selection”, or use
+        the right-click menu, the extension stores the page URL, title and site name; the
+        article text or the text you selected; the date you saved it; and any tags or
+        notes you add.
+      </p>
+      <p>
+        The extension does not track your browsing. It reads a page only at the moment you
+        ask it to save that page, and only the tab you are looking at. It does not run in
+        the background on sites you visit, does not record history, and does not observe
+        tabs you have not asked it to save.
+      </p>
+
+      <h2>Where it is stored</h2>
+      <ul>
+        <li>
+          <strong>On your device.</strong> Every capture is written to your browser’s local
+          storage. This is the primary copy and it never leaves your machine on its own.
+        </li>
+        <li>
+          <strong>In your Google Drive, only if you connect it.</strong> Captures sync to a
+          private application folder in your own Drive, under your own account, counting
+          against your storage quota. We have no access to it.
+        </li>
+      </ul>
+      <p>
+        The extension requests only the
+        <code>https://www.googleapis.com/auth/drive.appdata</code> scope, which can read
+        and write a hidden folder reserved for this extension. It cannot see, read or
+        modify any other file in your Drive.
+      </p>
+
+      <h2>What is never done</h2>
+      <ul>
+        <li>No data is sent to the developer or to any third party.</li>
+        <li>No analytics, telemetry, crash reporting or usage statistics.</li>
+        <li>No advertising, no profiling, no data sold or shared.</li>
+        <li>
+          Nothing is transmitted anywhere except between your browser and your own Google
+          Drive.
+        </li>
+      </ul>
+
+      <h2>Authentication</h2>
+      <p>
+        If you connect Google Drive, an access token is stored in your browser’s extension
+        storage so syncing can continue without asking you to sign in repeatedly. The token
+        is held only on your device and is discarded when you disconnect your account.
+      </p>
+
+      <h2>Deleting your data</h2>
+      <ul>
+        <li><strong>Individual captures:</strong> delete them in the extension; the deletion syncs to your Drive copy.</li>
+        <li><strong>Everything local:</strong> removing the extension deletes its local storage.</li>
+        <li>
+          <strong>Everything in Drive:</strong> Google Drive → Settings → Manage apps →
+          Content Saver → Delete hidden app data. Because the folder is hidden this is the
+          only way to remove it, and it cannot be undone.
+        </li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>
+        Content Saver is not directed at children and collects no personal information from
+        anyone.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If this policy changes, the updated version will be published here with a new date.
+        Material changes will be noted in the extension’s release notes.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions or concerns:
+        <a href="https://github.com/caroljardims/content-saver/issues">open an issue on GitHub</a>.
+      </p>
+
+      <footer>Content Saver is open source.</footer>
+    </main>
+  </body>
+</html>
