@@ -9,3 +9,10 @@ stats.html
 *.pem
 .DS_Store
 dist-dev/
+
+# Icon design sources. Kept out of the repo and, more to the point, out of the
+# sources zip that goes to addons.mozilla.org - wxt packages the whole working
+# directory, and the .ai file alone is most of its size.
+icon-source.png
+necessaire.ai
+1x/

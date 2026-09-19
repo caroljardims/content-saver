@@ -22,6 +22,14 @@ export default defineConfig({
     plugins: [tailwindcss()],
   }),
 
+  // The sources zip for addons.mozilla.org packs the working directory, and
+  // WXT does not read .gitignore for it. Reviewers need what builds the
+  // extension; the icon design files are not that, and the Illustrator one
+  // alone was 2 MB of the 1.85 MB archive.
+  zip: {
+    excludeSources: ['**/*.ai', '**/*.af', 'icon-source.png', '1x/**'],
+  },
+
   hooks: {
     /**
      * The content script is registered at runtime, so WXT adds its match
