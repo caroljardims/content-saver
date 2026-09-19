@@ -1,6 +1,6 @@
 {
   "name": "necessaire",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Save links, selections and article text to your own cloud storage.",
