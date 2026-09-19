@@ -63,6 +63,12 @@ capture ──▶ IndexedDB (done — the UI updates here) ──▶ outbox
 | `deletedAt` | delete always wins | A stale tag edit should not resurrect something you deleted |
 | `title`, `archived` | LWW by rev | Cheap, low-stakes |
 
+A delete empties the record rather than flagging it: the tombstone keeps its
+id, rev and deletion date so other devices learn about it, and nothing else, so
+the next push overwrites the remote file instead of leaving the content there
+marked deleted. `db.scrubTombstones()` clears tombstones written before this
+and requeues them; ones already purged locally are out of reach.
+
 The merge is commutative and idempotent, so both devices converge on the same record regardless of who syncs first. That property is covered by tests.
 
 **`index.json` is a cache, never the source of truth.** It exists so a fresh device paints a list quickly; if it is missing or corrupt, it rebuilds from the item files.

@@ -60,8 +60,12 @@ disconnect your account.
 
 ## Deleting your data
 
-- **Individual captures:** delete them in the extension. The deletion syncs to
-  your Drive copy.
+- **Individual captures:** delete them in the extension. On the next sync the
+  Drive copy is overwritten with an empty marker: the text, URL, title, tags
+  and notes are gone, and only the item's id and the date it was deleted
+  remain, so your other devices learn it is gone. Those markers are dropped
+  after 90 days. Captures deleted by a version before 1.0.2 kept their content
+  in Drive; updating clears them on the next sync.
 - **Everything local:** removing the extension deletes its local storage.
 - **Everything in Drive:** go to Google Drive → Settings → Manage apps →
   Nécessaire → Delete hidden app data. Because the application folder is

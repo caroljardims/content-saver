@@ -3,7 +3,7 @@ import { activeAdapter, adapterById, setActiveAdapter } from '../adapters/regist
 import { listRemoteFiles } from '../adapters/gdrive';
 import * as db from '../core/db';
 import { save, status, sync } from '../core/engine';
-import { newCapture, toCapture, type Capture, type CaptureRecord } from '../core/model';
+import { newCapture, toCapture, tombstone, type Capture, type CaptureRecord } from '../core/model';
 import type { CaptureSummary, Extraction, Message, Response } from '../lib/messages';
 
 const SYNC_ALARM = 'sync';
@@ -14,6 +14,13 @@ export default defineBackground(() => {
   exposeDebugHandle();
 
   void ensureSyncAlarm();
+
+  // Captures deleted before tombstones were emptied still hold their content,
+  // locally and in the backend. Clear them once and requeue so the next sync
+  // overwrites those remote files too.
+  void db.scrubTombstones().then((scrubbed) => {
+    if (scrubbed > 0) console.info(`[necessaire] cleared ${scrubbed} old tombstone(s)`);
+  });
 
   browser.runtime.onInstalled.addListener(async () => {
     browser.contextMenus.create({
@@ -227,13 +234,13 @@ async function handle(message: Message): Promise<Response> {
       const existing = await db.get(message.id);
       if (!existing) return { ok: false, error: 'Not found' };
       // Tombstone, not a row deletion - other devices need to learn about it.
+      // Emptied rather than flagged, so the push overwrites the remote copy
+      // with a husk instead of leaving the content there marked deleted.
       await db.put(
-        {
-          ...toCapture(existing),
+        tombstone(toCapture(existing), {
           deletedAt: new Date().toISOString(),
-          rev: existing.rev + 1,
           deviceId: await db.deviceId(),
-        },
+        }),
         1,
       );
       await sync().catch(() => undefined);

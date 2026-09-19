@@ -63,6 +63,53 @@ export function newCapture(
   };
 }
 
+/**
+ * Turn a capture into an empty tombstone.
+ *
+ * A delete has to leave *something* behind — other devices learn about it by
+ * seeing the tombstone, and dropping the row outright means the next device to
+ * sync pushes the capture straight back. But the tombstone only needs its
+ * identity and its clock: everything the user actually saved is cleared, so a
+ * delete removes the content from the backend on the next push instead of
+ * leaving a full copy sitting there flagged as deleted.
+ *
+ * `url` goes too. It is the most identifying field of the lot, and nothing
+ * reads it once `deletedAt` is set — remote files are named by id.
+ */
+export function tombstone(capture: Capture, at: { deletedAt: string; deviceId: string }): Capture {
+  return {
+    id: capture.id,
+    kind: capture.kind,
+    url: '',
+    createdAt: capture.createdAt,
+    content: '',
+    excerpt: '',
+    siteName: '',
+    title: '',
+    tags: [],
+    notes: '',
+    archived: capture.archived,
+    rev: capture.rev + 1,
+    deviceId: at.deviceId,
+    updatedAt: at.deletedAt,
+    deletedAt: capture.deletedAt ?? at.deletedAt,
+  };
+}
+
+/** True when a tombstone still carries user content that should be cleared. */
+export function hasResidue(capture: Capture): boolean {
+  return Boolean(
+    capture.deletedAt &&
+      (capture.url ||
+        capture.content ||
+        capture.excerpt ||
+        capture.siteName ||
+        capture.title ||
+        capture.notes ||
+        capture.tags.length),
+  );
+}
+
 /** Strip local bookkeeping before handing a record to an adapter. */
 export function toCapture(record: CaptureRecord): Capture {
   const { dirty, remoteId, etag, attempts, needsAttention, ...capture } = record;

@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { Capture, CaptureRecord } from './model';
+import { hasResidue, tombstone, type Capture, type CaptureRecord } from './model';
 
 interface SaverDB extends DBSchema {
   captures: {
@@ -152,6 +152,44 @@ export async function purgeTombstones(olderThanDays = 90): Promise<number> {
   }
   await tx.done;
   return purged;
+}
+
+/**
+ * Empty any tombstone still carrying user content, and requeue it.
+ *
+ * Deletes used to keep every field and only set `deletedAt`, which left the
+ * full text of a deleted capture sitting in the backend. Marking these dirty
+ * makes the next push overwrite those remote files. Idempotent: once a
+ * tombstone is empty it is never picked up again. Tombstones already purged
+ * locally are out of reach - only clearing the app folder removes those.
+ */
+export async function scrubTombstones(): Promise<number> {
+  const database = await db();
+  const tx = database.transaction('captures', 'readwrite');
+  let scrubbed = 0;
+
+  for (const record of await tx.store.getAll()) {
+    if (!hasResidue(record)) continue;
+    // Keeps the existing rev and deviceId: this rewrites the same logical
+    // version, so it must not look like a new edit to another device.
+    const emptied = tombstone(record, {
+      deletedAt: record.deletedAt as string,
+      deviceId: record.deviceId,
+    });
+    await tx.store.put({
+      ...record,
+      ...emptied,
+      rev: record.rev,
+      updatedAt: record.updatedAt,
+      dirty: 1,
+      attempts: 0,
+      needsAttention: false,
+    });
+    scrubbed += 1;
+  }
+
+  await tx.done;
+  return scrubbed;
 }
 
 /**
